@@ -1,0 +1,1 @@
+makensis setup.nsi

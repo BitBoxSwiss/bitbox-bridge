@@ -1,0 +1,8 @@
+[workspace]
+
+# Currently there are conflicting deps in the repos.
+members = [
+    "u2fframing",
+    "bitbox-bridge",
+    "hidapi-async",
+]

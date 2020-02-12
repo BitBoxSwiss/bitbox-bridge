@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+
+if /bin/launchctl list "ch.shiftcrypto.bitboxbridge" &> /dev/null; then
+  /bin/launchctl unload "/Library/LaunchDaemons/ch.shiftcrypto.bitboxbridge.plist"
+fi

@@ -1,0 +1,29 @@
+[package]
+name = "bitbox-bridge"
+version = "1.0.0"
+authors = ["Niklas Claesson <nicke.claesson@gmail.com>"]
+edition = "2018"
+license = "Apache-2.0"
+
+[dependencies]
+byteorder = "1.3"
+env_logger = "0.7"
+futures = "0.3"
+futures-util = "0.3"
+hidapi = "1.0"
+hyper = "0.13"
+log = "0.4.8"
+percent-encoding = "2.1"
+thiserror = "1.0"
+tokio = {version="0.2", features=["time", "macros"]}
+windows-service = "0.2.0"
+clap = "2.33"
+warp = "0.2.1"
+
+[dependencies.u2fframing]
+version = "0.1"
+path = "../u2fframing"
+
+[dependencies.hidapi-async]
+version = "0.1"
+path = "../hidapi-async"

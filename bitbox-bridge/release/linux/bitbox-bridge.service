@@ -1,0 +1,11 @@
+[Unit]
+Description=Shiftcrypto BitBoxBridge
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/bitbox-bridge/bin/bitbox-bridge
+User=bitbox
+
+[Install]
+WantedBy=multi-user.target
