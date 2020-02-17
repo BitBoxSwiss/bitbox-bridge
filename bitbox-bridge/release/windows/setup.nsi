@@ -51,7 +51,7 @@ Var StartMenuGroup
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile "BitBoxBridge-${VERSION}-installer.exe"
+OutFile "BitBoxBridge-${VERSION}-Win64-installer.exe"
 InstallDir $PROGRAMFILES64\BitBoxBridge
 CRCCheck on
 XPStyle on
