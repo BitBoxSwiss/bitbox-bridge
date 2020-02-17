@@ -2,8 +2,8 @@
 <installer-gui-script minSpecVersion="1">
     <title>BitBoxBridge</title>
     <organization>ch.shiftcrypto</organization>
-    <background alignment="bottomleft" file="BBBridge_icon_160x125.png" scaling="none" />
-    <background-darkAqua alignment="bottomleft" file="BBBridge_icon_inverted_160x125.png" scaling="none" />
+    <background alignment="bottomleft" file="BBBridge_icon_blue_160x125.png" scaling="none" />
+    <background-darkAqua alignment="bottomleft" file="BBBridge_icon_blue_160x125.png" scaling="none" />
     <domains enable_localSystem="true"/>
     <options customize="never" require-scripts="true" rootVolumeOnly="true" />
     <!-- Define documents displayed at various steps -->

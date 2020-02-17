@@ -51,7 +51,7 @@ Var StartMenuGroup
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile "BitBoxBridge-${VERSION}-installer.exe"
+OutFile "BitBoxBridge-${VERSION}-Win64-installer.exe"
 InstallDir $PROGRAMFILES64\BitBoxBridge
 CRCCheck on
 XPStyle on
@@ -100,7 +100,7 @@ Section -post SEC0001
     WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" UninstallString $INSTDIR\uninstall.exe
     WriteRegDWORD HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoModify 1
     WriteRegDWORD HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoRepair 1
-    nsExec::Exec '"sc.exe" create bitbox-bridge "binPath=$INSTDIR\bitbox-bridge.exe" start=auto'
+    nsExec::Exec '"sc.exe" create bitbox-bridge binPath= "$INSTDIR\bitbox-bridge.exe" start= auto'
     nsExec::Exec '"sc.exe" start bitbox-bridge'
 SectionEnd
 

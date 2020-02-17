@@ -11,5 +11,5 @@ VERSION=$(toml-echo bitbox-bridge/Cargo.toml package.version)
 (
 	cd bitbox-bridge/release/darwin
 	pkgbuild --root tmp --scripts scripts --identifier ch.shiftcrypto.bitboxbridge --version "${VERSION}" --ownership recommended bridge.pkg
-	productbuild --distribution distribution.xml --resources resources --package-path . --version "${VERSION}" "${NAME}-${VERSION}.pkg"
+	productbuild --distribution distribution.xml --resources resources --package-path . --version "${VERSION}" "${NAME}-${VERSION}-macOS-installer.pkg"
 )
