@@ -14,7 +14,7 @@ SetCompressor /SOLID lzma
 !define URL https://github.com/digitalbitbox/bitbox-bridge/releases/
 
 # MUI Symbol Definitions
-!define MUI_ICON "resources\icon.ico"
+!define MUI_ICON "..\resources\icon.ico"
 # !define MUI_WELCOMEFINISHPAGE_UNICON "${ICONDIR}\icon.ico"
 # !define MUI_HEADERIMAGE "${ICONDIR}\icon.ico"
 # !define MUI_HEADERIMAGE_RIGHT "${ICONDIR}\icon.ico"
@@ -74,7 +74,7 @@ Section -Main SEC0000
     nsExec::Exec '"sc.exe" stop bitbox-bridge'
     nsExec::Exec '"sc.exe" delete bitbox-bridge'
     SetOverwrite on
-    File "bitbox-bridge.exe"
+    File "..\bitbox-bridge.exe"
     # File /r "build\windows\*"
     # SetOutPath $INSTDIR\daemon
     # SetOutPath $INSTDIR\doc

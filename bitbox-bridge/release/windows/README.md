@@ -2,7 +2,7 @@
 * rust compiler
 * Visual studio, I think
 * toml-echo (cargo install)
-* nsis 3.5 (add manually to PATH)
+* nsis 3.5 (add manually to PATH) or WIX toolset 3.11
 
 # Cross-compiling from linux
 * make dockerinit
