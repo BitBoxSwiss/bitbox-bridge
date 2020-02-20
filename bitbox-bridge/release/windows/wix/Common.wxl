@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="ProductName">BitBoxBridge</String>
+  <String Id="ProductNameFolder">BitBoxBridge</String>
+  <String Id="Company">Shift Cryptosecurity</String>
+
+  <String Id="Description">Web to USB bridge for BitBox02</String>
+  <String Id="Comments">This bridge is used for web wallets</String>
+  <String Id="Keywords">bitbox02,crypto,cryptocurrencies,bitcoin,ethereum</String>
+
+  <String Id="DowngradeErrorMessage">A newer version is already installed</String>
+
+  <String Id="Language">1033</String>
+</WixLocalization>

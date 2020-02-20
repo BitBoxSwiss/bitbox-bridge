@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <!-- ProductCode should change with every release -->
+  <?define ProductCode = "{66DFDD85-CD93-4E6C-9DE7-30EFF4DC12E5}"?>
+  <!-- UpgradeCode should stay the same foverever (this is the real ID of the app)-->
+  <?define UpgradeCode = "{dfe7eecb-5dc0-4c30-ba78-a9eff36efa31}"?>
+  <?define BuildVersion = $(env.VERSION)?>
+
+  <Product Id="{7DAF2692-5978-41FE-8148-61BEF4AA3AE2}"
+    Name="!(loc.ProductName)"
+    Language="!(loc.Language)"
+    Version="$(var.BuildVersion)"
+    Manufacturer="!(loc.Company)"
+    UpgradeCode="$(var.UpgradeCode)">
+    <Package InstallerVersion="200" 
+      Compressed="yes" 
+      InstallScope="perMachine"
+      Manufacturer="!(loc.Company)"
+      Description="!(loc.Description)"
+      Keywords="!(loc.Keywords)"
+      Comments="!(loc.Comments)"
+      Languages="!(loc.Language)"
+      />
+
+    <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeErrorMessage)" />
+    <!-- Include .cab file into .msi file -->
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="icon.ico" SourceFile="$(var.ProjectDir)..\resources\icon.ico"/>
+
+    <!-- Use the icon.ico defined above for this installer -->
+    <Property Id="ARPPRODUCTICON">icon.ico</Property>
+    <!-- Set Help/support website -->
+    <Property Id="ARPURLINFOABOUT">http://shiftcrypto.ch</Property>
+
+    <!-- Create a basic UI for the installer -->
+    <UIRef Id="Shift_Installer_UI" />
+
+    <!-- Background resolution: 493x312-->
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)..\resources\BBBridge_Win_Wix_Background.png"/>
+    <!-- Banner resolution: 493x58-->
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)..\resources\BBBridge_Win_Wix_Banner.png"/>
+
+    <Feature Id="ProductFeature" Title="Executable" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+  </Product>
+</Wix>
