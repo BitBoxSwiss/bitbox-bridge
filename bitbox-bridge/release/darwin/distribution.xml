@@ -8,7 +8,6 @@
     <options customize="never" require-scripts="true" rootVolumeOnly="true" />
     <!-- Define documents displayed at various steps -->
     <welcome    file="welcome.html"    mime-type="text/html" />
-    <license    file="license.txt"    mime-type="text/plain" />
     <conclusion file="conclusion.html" mime-type="text/html" />
     <!-- List all component packages -->
     <pkg-ref id="ch.shiftcrypto.bitboxbridge"
