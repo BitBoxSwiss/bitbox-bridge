@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+  <Bundle
+    Name="!(loc.ProductName)"
+    Version="$(env.VERSION)"
+    Manufacturer="!(loc.Company)"
+    UpgradeCode="{ae492e68-753b-44ac-b428-ecf67ed44d0d}"
+    IconSourceFile="..\resources\icon.ico"
+    AboutUrl="http://shiftcrypto.ch">
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+      <bal:WixStandardBootstrapperApplication
+      	LicenseUrl=""
+      	ThemeFile="HyperlinkTheme.xml"
+      	LocalizationFile="HyperlinkTheme.wxl"
+      	SuppressOptionsUI="yes"
+      	LogoFile="..\resources\BBBridge_Win_Wix_Bundle_Background.png"/>
+    </BootstrapperApplicationRef>
+
+    <Chain>
+      <MsiPackage
+        Id="BridgePackage"
+        SourceFile="$(var.TargetDir)\en-us\BitBoxBridge-$(env.VERSION)-win64-installer.msi"
+        Vital="yes" />
+    </Chain>
+  </Bundle>
+</Wix>

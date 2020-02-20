@@ -4,10 +4,10 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>3.10</ProductVersion>
-    <ProjectGuid>a9484e39-d564-44cb-8624-1e1362fb6363</ProjectGuid>
+    <ProjectGuid>74d04609-43db-46fc-ae54-c8a9aac4615c</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>BitBoxBridge-$(VERSION)-Win64-installer</OutputName>
-    <OutputType>Package</OutputType>
+    <OutputType>Bundle</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -28,20 +28,19 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Components.wxs" />
-    <Compile Include="Directories.wxs" />
-    <Compile Include="Product.wxs" />
+    <Compile Include="Bundle.wxs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Common.wxl" />
+    <EmbeddedResource Include="HyperlinkTheme.wxl" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <WixExtension Include="WixUIExtension">
-      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
-      <Name>WixUIExtension</Name>
+    <WixExtension Include="WixBALExtension">
+      <HintPath>$(WixExtDir)\WixBALExtension.dll</HintPath>
+      <Name>WixBALExtension</Name>
     </WixExtension>
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
@@ -49,11 +48,11 @@
   <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
-  <Target Name="SignCabs">
-    <Exec Command="$(ProjectDir)signtool.cmd /a &quot;%(SignCabs.FullPath)&quot;" />
+  <Target Name="SignBundleEngine">
+    <Exec Command="$(ProjectDir)signtool.cmd /a &quot;@(SignBundleEngine)&quot;" />
   </Target>
-	<Target Name="SignMsi">
-    <Exec Command="$(ProjectDir)signtool.cmd /a &quot;%(SignMsi.FullPath)&quot;" />
+  <Target Name="SignBundle">
+    <Exec Command="$(ProjectDir)signtool.cmd /a &quot;@(SignBundle)&quot;" />
   </Target>
   <PropertyGroup>
     <PostBuildEvent />
