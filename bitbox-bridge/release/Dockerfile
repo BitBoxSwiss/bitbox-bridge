@@ -40,20 +40,6 @@ RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-8 10
 
 
 ##############################
-# Rust compiler
-ENV PATH /opt/cargo/bin:$PATH
-ENV RUSTUP_HOME=/opt/rustup
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | CARGO_HOME=/opt/cargo sh -s -- --profile minimal --default-toolchain 1.39.0 -y
-RUN rustup target add x86_64-pc-windows-gnu
-RUN rustup target add x86_64-apple-darwin
-
-
-##############################
-# toml-echo is a tool for echoing toml variables (like the package.version)
-RUN CARGO_HOME=/opt/cargo cargo install toml-echo
-
-
-##############################
 # bitbox-bridge linux dependencies
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libusb-1.0-0-dev
@@ -78,6 +64,20 @@ RUN git clone https://github.com/tpoechtrager/osxcross /opt/osxcross
 RUN cd /opt/osxcross && wget -nc https://s3.dockerproject.org/darwin/v2/MacOSX10.10.sdk.tar.xz
 RUN cd /opt/osxcross && mv MacOSX10.10.sdk.tar.xz tarballs/
 RUN cd /opt/osxcross && UNATTENDED=yes OSX_VERSION_MIN=10.7 ./build.sh
+
+
+##############################
+# Rust compiler
+ENV PATH /opt/cargo/bin:$PATH
+ENV RUSTUP_HOME=/opt/rustup
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | CARGO_HOME=/opt/cargo sh -s -- --profile minimal --default-toolchain 1.41.0 -y
+RUN rustup target add x86_64-pc-windows-gnu
+RUN rustup target add x86_64-apple-darwin
+
+
+##############################
+# toml-echo is a tool for echoing toml variables (like the package.version)
+RUN CARGO_HOME=/opt/cargo cargo install toml-echo
 
 
 ##############################
