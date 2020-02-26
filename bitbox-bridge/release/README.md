@@ -1,15 +1,22 @@
 # How to release all the platforms
 
-Bump the version number, build the project to update the lockfile, commit and merge to master. The
-version number is in `bitbox-bridge/Cargo.toml`.
+* Bump the version number, build the project to update the lockfile, commit and
+  merge to master. The version number is in `bitbox-bridge/Cargo.toml`.
+* Replace the `ProductCode` in `wix\Product.wxs` for the windows installer.
+  Create a new id with `uuidgen`.
 
 Run `make release`. If needed, run `make dockerinit` to create the docker image.
 
-Linux packages (deb/rpm/tar.gz2) will be created immediately. For Windows and OSX:
+## Linux:
+Packages (deb/rpm/tar.gz2) will be created without further work.
 
-* Copy the whole project to a windows machine and go into the windows subdirectory and run
-`package.cmd`.
-* Copy the whole project to an OSX machine and run `bitbox-bridge/release/darwin/package.sh`.
+## Windows:
+* Copy the whole project to a windows machine
+* Run `package.cmd`
+
+## OSX
+* Copy the whole project to an OSX machine
+* Run `bitbox-bridge/release/darwin/package.sh`
 
 You can of course also mount the same directory on windows/osx to avoid copying.
 
