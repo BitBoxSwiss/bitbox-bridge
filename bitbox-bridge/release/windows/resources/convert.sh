@@ -1,6 +1,6 @@
 #!/bin/sh
 
-convert icon_1024x1024_bridge.png  -bordercolor white -border 0 \
+convert icon_1024x1024_bridge.png -background transparent \
       \( -clone 0 -resize 16x16 \) \
       \( -clone 0 -resize 20x20 \) \
       \( -clone 0 -resize 24x24 \) \
