@@ -1,9 +1,10 @@
-# On windows
-* rust compiler
+# Dependnecies for building on windows
 * Visual studio, I think
-* toml-echo (cargo install)
-* nsis 3.5 (add manually to PATH) or WIX toolset 3.11
+* rust compiler
 
 # Cross-compiling from linux
 * make dockerinit
-* make release  # Will only compile for now, use windows to package
+* make release (will compile in container and copy executable to this directory)
+
+# Dependencies for packaging on windows
+See `wix` folder.

@@ -2,15 +2,14 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
   <!-- ProductCode should change with every release -->
-  <?define ProductCode = "{66DFDD85-CD93-4E6C-9DE7-30EFF4DC12E5}"?>
+  <?define ProductCode = "{66dfdd85-cd93-4e6c-9de7-30eff4dc12e5}"?>
   <!-- UpgradeCode should stay the same foverever (this is the real ID of the app)-->
   <?define UpgradeCode = "{dfe7eecb-5dc0-4c30-ba78-a9eff36efa31}"?>
-  <?define BuildVersion = $(env.VERSION)?>
 
-  <Product Id="{7DAF2692-5978-41FE-8148-61BEF4AA3AE2}"
+  <Product Id="{7daf2692-5978-41fe-8148-61bef4aa3ae2}"
     Name="!(loc.ProductName)"
     Language="!(loc.Language)"
-    Version="$(var.BuildVersion)"
+    Version="$(env.VERSION)"
     Manufacturer="!(loc.Company)"
     UpgradeCode="$(var.UpgradeCode)">
     <Package InstallerVersion="200" 
