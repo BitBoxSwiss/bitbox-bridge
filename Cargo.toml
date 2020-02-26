@@ -6,3 +6,9 @@ members = [
     "bitbox-bridge",
     "hidapi-async",
 ]
+
+
+[profile.release]
+lto = true
+#debug = 1
+incremental = false

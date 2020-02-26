@@ -23,6 +23,7 @@ tar --owner=0 --group=0 --numeric-owner --mtime='1970-01-01' --sort=name \
 # Create packages
 for type in deb rpm; do
 	fpm \
+		--force \
 		--input-type tar \
 		--output-type ${type} \
 		--architecture x86_64 \
