@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head></head>
+  <body>
+    <pre>
+BitBoxBridge v{{ version }}
+    GET /api/info
+    GET /api/v1/devices
+ GET/WS /api/v1/socket/:socket
+    </pre>
+    <hr />
+    <pre id="api"></pre>
+    <script>
+<!--
+fetch("http://{{ addr }}/api/info")
+  .then((response) => response.json())
+  .then((json) => {document.getElementById("api").innerHTML = "api version = " + json.version})
+-->
+    </script>
+  </body>
+</html>

@@ -19,6 +19,7 @@ tokio = {version="0.2", features=["time", "macros"]}
 windows-service = "0.2.0"
 clap = "2.33"
 warp = "0.2.1"
+tera = "1.1.0"
 
 [dependencies.u2fframing]
 version = "0.1"

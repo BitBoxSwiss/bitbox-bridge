@@ -218,12 +218,22 @@ pub fn create(
     let devices = warp::path("devices").and(warp::path::end());
 
     // `GET /`
-    // TODO: Put html in an external file
-    let root = warp::path::end().map(|| {
-        format!(
-            "BitBoxBridge v{}\n    GET /api/info\n    GET /api/v1/devices\n GET/WS /api/v1/socket/:socket",
-            clap::crate_version!()
-        )
+    let root = warp::path::end().map({
+        let addr = addr.clone();
+        move || {
+            let html = include_str!("../resources/index.html");
+            let ctx = {
+                let mut ctx = tera::Context::new();
+                ctx.insert("version", clap::crate_version!());
+                ctx.insert("addr", &addr);
+                ctx
+            };
+            let body = match tera::Tera::one_off(html, &ctx, true) {
+                Ok(reply) => reply,
+                Err(_) => "Could not render tera template".into(),
+            };
+            warp::reply::html(body)
+        }
     });
 
     // `GET /api/v1/socket/:socket`
