@@ -57,6 +57,19 @@ fn is_valid_origin(host: &str) -> bool {
         || host == "myetherwallet.com"
 }
 
+fn add_origin(
+    reply: impl warp::Reply + 'static,
+    origin: Option<String>,
+) -> Box<dyn warp::Reply + 'static> {
+    match origin {
+        Some(origin) => {
+            let reply = warp::reply::with_header(reply, "Access-Control-Allow-Origin", origin);
+            Box::new(warp::reply::with_header(reply, "Vary", "Origin"))
+        }
+        None => Box::new(reply),
+    }
+}
+
 // Try to notify other task that we've had activity,
 // ignore if channel already contained notification.
 pub fn notify(tx: &mut mpsc::Sender<()>) {
@@ -179,28 +192,36 @@ pub fn create(
         })
         .untuple_one();
 
-    // Only accept some origins for websockets
+    // Only accept some origin
     // Use untuple_one at the end to get rid of the "unit" return value
-    let check_origin = warp::header("origin")
-        .and_then(|origin: hyper::Uri| {
+    let check_origin = warp::header::optional("origin")
+        .and_then(|origin: Option<hyper::Uri>| {
             debug!("{:?}", origin);
             async move {
-                match origin.host() {
-                    Some(host) => {
-                        if !is_valid_origin(&host) {
-                            warn!("Not whitelisted origin tried to connect: {}", host);
+                match origin {
+                    Some(origin) => match origin.host() {
+                        Some(host) => {
+                            if !is_valid_origin(&host) {
+                                warn!("Not whitelisted origin tried to connect: {}", host);
+                                return Err(warp::reject::custom(WebError::NonLocalIP));
+                            }
+                        }
+                        None => {
+                            warn!("Not whitelisted origin tried to connect");
                             return Err(warp::reject::custom(WebError::NonLocalIP));
                         }
-                    }
+                    },
                     None => {
-                        warn!("Not whitelisted origin tried to connect");
-                        return Err(warp::reject::custom(WebError::NonLocalIP));
+                        // If there is no `origin` header, it must mean that the connection is from
+                        // a website hosted by ourselves. Which is fine.
                     }
                 }
                 Ok(())
             }
         })
         .untuple_one();
+
+    let opt_origin = warp::header::optional("origin");
 
     // path segments for /api/v1
     let api = warp::path("api");
@@ -218,12 +239,22 @@ pub fn create(
     let devices = warp::path("devices").and(warp::path::end());
 
     // `GET /`
-    // TODO: Put html in an external file
-    let root = warp::path::end().map(|| {
-        format!(
-            "BitBoxBridge v{}\n    GET /api/info\n    GET /api/v1/devices\n GET/WS /api/v1/socket/:socket",
-            clap::crate_version!()
-        )
+    let root = warp::path::end().map({
+        let addr = addr.clone();
+        move || {
+            let html = include_str!("../resources/index.html");
+            let ctx = {
+                let mut ctx = tera::Context::new();
+                ctx.insert("version", clap::crate_version!());
+                ctx.insert("addr", &addr);
+                ctx
+            };
+            let body = match tera::Tera::one_off(html, &ctx, true) {
+                Ok(reply) => reply,
+                Err(_) => "Could not render tera template".into(),
+            };
+            warp::reply::html(body)
+        }
     });
 
     // `GET /api/v1/socket/:socket`
@@ -239,16 +270,20 @@ pub fn create(
     let devices = warp::get()
         .and(v1_root)
         .and(devices)
+        .and(check_origin)
         .and(usb_devices.clone())
         .and_then(list_devices)
-        .map(|reply| warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*"));
+        .and(opt_origin)
+        .map(add_origin);
 
     // `GET /api/info`
     let info = warp::get()
         .and(api)
         .and(info)
+        .and(check_origin)
         .and_then(show_info)
-        .map(|reply| warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*"));
+        .and(opt_origin)
+        .map(add_origin);
 
     // combine routes
     let routes = only_local_ip
@@ -257,19 +292,22 @@ pub fn create(
         .recover(|err: warp::Rejection| {
             async {
                 if let Some(err) = err.find::<WebError>() {
-                    match err {
+                    let reply = match err {
                         // We return 423 Locked if the device is already taken
-                        WebError::NoSuchDevice => Ok(warp::http::Response::builder()
+                        WebError::NoSuchDevice => warp::http::Response::builder()
                             .status(warp::http::StatusCode::LOCKED)
-                            .body("Device locked")),
+                            .body("Device locked"),
                         // We return 403 Forbidden for all other errors:
                         // The request was valid, but the server is refusing action. The user might not
                         // have the necessary permissions for a resource, or may need an account of
                         // some sort.
-                        _ => Ok(warp::http::Response::builder()
+                        _ => warp::http::Response::builder()
                             .status(warp::http::StatusCode::FORBIDDEN)
-                            .body("Not allowed")),
-                    }
+                            .body("Not allowed"),
+                    };
+                    // Allow anyone to see error messages
+                    let reply = warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*");
+                    Ok(reply)
                 } else {
                     Err(err)
                 }
