@@ -50,6 +50,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     println!("Set RUST_LOG=<filter> to enable logging. Example RUST_LOG=debug");
 
+    // Parse CLI args
+    let matches = clap::App::new("BitBoxBridge")
+        .version(clap::crate_version!())
+        .arg(
+            clap::Arg::with_name("port")
+                .long("port")
+                .short("p")
+                .default_value("8178"),
+        )
+        .get_matches();
+
+    // Unwrap shouldn't happen since it has a default value
+    let port = matches.value_of("port").unwrap();
     // Create an async runtime for spawning futures on
     let mut rt = Runtime::new()?;
 
@@ -73,7 +86,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    let addr: SocketAddr = "127.0.0.1:8178".parse()?;
+    let addr = SocketAddr::new("127.0.0.1".parse()?, u16::from_str_radix(port, 10)?);
 
     println!("listening on http://{}", addr);
     let server = web::create(usb_devices, notify_tx, addr);
