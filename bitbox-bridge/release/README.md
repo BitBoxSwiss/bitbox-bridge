@@ -3,7 +3,7 @@
 * Bump the version number, build the project to update the lockfile, commit and
   merge to master. The version number is in `bitbox-bridge/Cargo.toml`.
 * Replace the `ProductCode` in `wix\Product.wxs` for the windows installer.
-  Create a new id with `uuidgen`.
+  Create a new id with `uuidgen` (available both on windows and linux).
 
 Run `make release`. If needed, run `make dockerinit` to create the docker image.
 
