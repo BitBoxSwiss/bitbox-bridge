@@ -19,9 +19,12 @@ install -D -m 0644 bitbox-bridge.service ./usr/lib/systemd/system/bitbox-bridge.
 tar --owner=0 --group=0 --numeric-owner --mtime='1970-01-01' --sort=name \
 	-caf "${TAR}"  ./opt ./lib ./usr
 
+DEPS_deb=libhidapi-libusb0
+DEPS_rpm=hidapi
 
 # Create packages
 for type in deb rpm; do
+	DEPS=DEPS_${type}
 	fpm \
 		--force \
 		--input-type tar \
@@ -30,7 +33,7 @@ for type in deb rpm; do
 		--name "${NAME}" \
 		--version "${VERSION}" \
 		--depends systemd \
-		--depends libhidapi-libusb0 \
+		--depends "${!DEPS}" \
 		--url 'http://shiftcrypto.ch' \
 		--maintainer 'Shiftcrypto <support@shiftcrypto.ch>' \
 		--before-install pre-install.sh \
