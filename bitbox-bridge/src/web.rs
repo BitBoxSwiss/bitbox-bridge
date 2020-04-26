@@ -46,7 +46,8 @@ fn is_valid_host(host: &str) -> bool {
     host == "localhost" || host == "127.0.0.1"
 }
 
-// Only accept websocket connections where the origin is "localhost" or from our domain
+// Only accept websocket connections where the origin is "localhost" or from our domain.
+// "null" is the origin when the origin is a file on the localhost, i.e., starts with file://.
 fn is_valid_origin(host: &str) -> bool {
     host == "localhost"
         || host == "127.0.0.1"
@@ -55,6 +56,7 @@ fn is_valid_origin(host: &str) -> bool {
         || host == "digitalbitbox.com"
         || host.ends_with(".myetherwallet.com")
         || host == "myetherwallet.com"
+        || host == "null"
 }
 
 fn add_origin(
