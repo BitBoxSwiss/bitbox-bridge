@@ -216,7 +216,7 @@ impl U2FFraming for U2FHID {
         buf = &mut buf[len..];
 
         let mut seq = 0;
-        while message.len() > 0 {
+        while !message.is_empty() {
             let len = encode_header_cont(self.cid, seq as u8, buf)?;
             buf = &mut buf[len..];
 

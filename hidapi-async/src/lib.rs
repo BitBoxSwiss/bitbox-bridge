@@ -207,7 +207,7 @@ impl AsyncWrite for Device {
                 }
             }
             buf = &buf[max_len..];
-            if buf.len() == 0 {
+            if buf.is_empty() {
                 debug!("Wrote total {}: {:?}", buf.len(), buf);
                 return Poll::Ready(Ok(len));
             }
@@ -289,7 +289,7 @@ impl AsyncRead for Device {
                             mpsc::TryRecvError::Disconnected => {
                                 return Poll::Ready(Err(io::Error::new(
                                     io::ErrorKind::Other,
-                                    format!("Inner channel dead"),
+                                    "Inner channel dead",
                                 )));
                             }
                             mpsc::TryRecvError::Empty => {

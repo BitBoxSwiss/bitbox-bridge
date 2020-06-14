@@ -1,0 +1,152 @@
+# Based on https://github.com/actions-rs/meta/blob/master/recipes/quickstart.md.
+# See GitHub CI reference docs at
+# https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions.
+
+name: ci
+on: [push, pull_request]
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install system package deps
+        run: sudo apt-get install libusb-1.0-0-dev
+
+      - name: Run cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Install system package deps
+        run: sudo apt-get install libusb-1.0-0-dev
+
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Run cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install system package deps
+        run: sudo apt-get install libusb-1.0-0-dev
+
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  build-linux:
+    name: Build linux release
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install package deps
+        run: sudo apt-get install libusb-1.0-0-dev -y
+
+      - name: Run cargo build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v2
+        with:
+          path: target/release/bitbox-bridge
+          name: bitbox-bridge-linux-${{github.sha}}
+
+  release-linux:
+    name: Release linux
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install package deps
+        run: >
+          sudo apt-get install libusb-1.0-0-dev -y;
+          sudo apt-get install ruby -y;
+          sudo gem install --no-doc fpm;
+          cargo install toml-echo
+
+      - name: Run release script
+        run: bitbox-bridge/release/linux/release.sh
+
+      - name: Upload tar
+        uses: actions/upload-artifact@v2
+        with:
+          path: bitbox-bridge/release/linux/bitbox-bridge*.tar.bz2
+          name: bitbox-bridge-linux-${{github.sha}}.tar.bz2
+
+      - name: Upload deb
+        uses: actions/upload-artifact@v2
+        with:
+          path: bitbox-bridge/release/linux/bitbox-bridge*.deb
+          name: bitbox-bridge-linux-${{github.sha}}.deb
+
+      - name: Upload rpm
+        uses: actions/upload-artifact@v2
+        with:
+          path: bitbox-bridge/release/linux/bitbox-bridge*.rpm
+          name: bitbox-bridge-linux-${{github.sha}}.rpm

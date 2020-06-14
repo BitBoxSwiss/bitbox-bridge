@@ -61,18 +61,15 @@ impl DeviceEntry {
     }
 
     pub async fn release(&mut self) {
-        match &mut self.acquired {
-            DeviceAcquiredState::Acquired(tx) => {
-                // We use a oneshot channel to communicate that the device has been successfully
-                // dropped. The "device_loop" task will first drop the device and then drop this
-                // Sender.
-                let (close_tx, close_rx) = oneshot::channel();
-                if let Err(_e) = tx.send(close_tx).await {
-                    error!("failed to send");
-                }
-                let _ = close_rx.await; // Error here is expected
+        if let DeviceAcquiredState::Acquired(tx) = &mut self.acquired {
+            // We use a oneshot channel to communicate that the device has been successfully
+            // dropped. The "device_loop" task will first drop the device and then drop this
+            // Sender.
+            let (close_tx, close_rx) = oneshot::channel();
+            if let Err(_e) = tx.send(close_tx).await {
+                error!("failed to send");
             }
-            _ => (),
+            let _ = close_rx.await; // Error here is expected
         }
         self.acquired = DeviceAcquiredState::Available;
     }
@@ -223,10 +220,12 @@ async fn handle_msg(
     let (cid, cmd, _) = u2fframing::parse_header(&msg[..])?;
 
     let mut wscodec = U2FWS::with_cid(cid, cmd);
-    let res = wscodec.decode(&msg[..])?.ok_or(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        "not enough data in websocket message",
-    ))?;
+    let res = wscodec.decode(&msg[..])?.ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "not enough data in websocket message",
+        )
+    })?;
 
     let mut hidcodec = U2FHID::new(cmd);
     let mut buf = [0u8; 7 + 7609]; // Maximally supported size by u2f
