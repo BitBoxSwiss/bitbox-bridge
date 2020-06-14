@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Check if the user requested some specific log level via an env variable. Otherwise set log
     // level to something reasonable.
-    if let Ok(_) = std::env::var("RUST_LOG") {
+    if std::env::var("RUST_LOG").is_ok() {
         env_logger::init();
     } else {
         env_logger::Builder::new()

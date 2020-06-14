@@ -15,7 +15,7 @@
 use futures::channel::mpsc;
 use futures::prelude::*;
 use futures_util::sink::SinkExt;
-use percent_encoding;
+use percent_encoding::percent_decode_str;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use warp::{self, Filter, Rejection};
@@ -85,7 +85,7 @@ async fn ws_upgrade(
     ws: warp::ws::Ws,
     usb_devices_tx: (USBDevices, mpsc::Sender<()>),
 ) -> Result<impl warp::Reply, Rejection> {
-    let path = match percent_encoding::percent_decode_str(&path).decode_utf8() {
+    let path = match percent_decode_str(&path).decode_utf8() {
         Ok(path) => path.into_owned(),
         Err(e) => {
             error!("Failed to decode string: {}", e);
@@ -198,8 +198,8 @@ pub fn create(
         .and_then(|origin: Option<hyper::Uri>| {
             debug!("{:?}", origin);
             async move {
-                match origin {
-                    Some(origin) => match origin.host() {
+                if let Some(origin) = origin {
+                    match origin.host() {
                         Some(host) => {
                             if !is_valid_origin(&host) {
                                 warn!("Not whitelisted origin tried to connect: {}", host);
@@ -210,12 +210,10 @@ pub fn create(
                             warn!("Not whitelisted origin tried to connect");
                             return Err(warp::reject::custom(WebError::NonLocalIP));
                         }
-                    },
-                    None => {
-                        // If there is no `origin` header, it must mean that the connection is from
-                        // a website hosted by ourselves. Which is fine.
                     }
                 }
+                // If there is no `origin` header, it must mean that the connection is from
+                // a website hosted by ourselves. Which is fine.
                 Ok(())
             }
         })
@@ -240,7 +238,6 @@ pub fn create(
 
     // `GET /`
     let root = warp::path::end().map({
-        let addr = addr.clone();
         move || {
             let html = include_str!("../resources/index.html");
             let ctx = {
@@ -271,7 +268,7 @@ pub fn create(
         .and(v1_root)
         .and(devices)
         .and(check_origin)
-        .and(usb_devices.clone())
+        .and(usb_devices)
         .and_then(list_devices)
         .and(opt_origin)
         .map(add_origin);
