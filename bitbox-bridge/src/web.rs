@@ -55,6 +55,8 @@ fn is_valid_origin(host: &str) -> bool {
         || host == "digitalbitbox.com"
         || host.ends_with(".myetherwallet.com")
         || host == "myetherwallet.com"
+        || host.ends_with(".pocketbitcoin.com")
+        || host == "pocketbitcoin.com"
 }
 
 fn add_origin(
