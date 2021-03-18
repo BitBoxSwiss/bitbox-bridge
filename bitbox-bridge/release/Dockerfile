@@ -9,7 +9,9 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     cmake \
     curl \
     wget \
-    software-properties-common 
+    software-properties-common \
+    apt-transport-https \
+    ca-certificates
 
 
 ##############################
