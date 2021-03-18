@@ -72,7 +72,7 @@ RUN cd /opt/osxcross && UNATTENDED=yes OSX_VERSION_MIN=10.7 ./build.sh
 # Rust compiler
 ENV PATH /opt/cargo/bin:$PATH
 ENV RUSTUP_HOME=/opt/rustup
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | CARGO_HOME=/opt/cargo sh -s -- --profile minimal --default-toolchain 1.41.0 -y
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | CARGO_HOME=/opt/cargo sh -s -- --profile minimal --default-toolchain 1.50.0 -y
 RUN rustup target add x86_64-pc-windows-gnu
 RUN rustup target add x86_64-apple-darwin
 
