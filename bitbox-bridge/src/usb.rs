@@ -22,7 +22,7 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::sync::Arc;
 use std::time::Duration;
 use std::time::SystemTime;
-use u2fframing::{U2FFraming, U2FHID, U2FWS};
+use u2fframing::{U2FFraming, U2fHid, U2fWs};
 
 struct DeviceEntry {
     acquired: DeviceAcquiredState,
@@ -75,23 +75,23 @@ impl DeviceEntry {
     }
 }
 
-pub struct USBDevices {
+pub struct UsbDevices {
     devices: Arc<Mutex<HashMap<String, DeviceEntry>>>,
     hidapi: Arc<Mutex<HidApi>>,
 }
 
-impl Clone for USBDevices {
+impl Clone for UsbDevices {
     fn clone(&self) -> Self {
-        USBDevices {
+        UsbDevices {
             devices: Arc::clone(&self.devices),
             hidapi: Arc::clone(&self.hidapi),
         }
     }
 }
 
-impl USBDevices {
+impl UsbDevices {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        Ok(USBDevices {
+        Ok(UsbDevices {
             devices: Default::default(),
             hidapi: Arc::new(Mutex::new(HidApi::new()?)),
         })
@@ -198,7 +198,7 @@ impl USBDevices {
 
             let (in_tx, in_rx) = mpsc::channel(128);
             let (out_tx, out_rx) = mpsc::channel(128);
-            let path_cstr = std::ffi::CString::new(&path[..])?;
+            let path_cstr = std::ffi::CString::new(path)?;
             let hiddevice = self.hidapi.lock().await.open_path(&path_cstr)?;
             let hiddevice = Device::new(hiddevice)?;
             info!("Successfully acquired device: {}", path);
@@ -219,7 +219,7 @@ async fn handle_msg(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let (cid, cmd, _) = u2fframing::parse_header(&msg[..])?;
 
-    let mut wscodec = U2FWS::with_cid(cid, cmd);
+    let mut wscodec = U2fWs::with_cid(cid, cmd);
     let res = wscodec.decode(&msg[..])?.ok_or_else(|| {
         std::io::Error::new(
             std::io::ErrorKind::Other,
@@ -227,7 +227,7 @@ async fn handle_msg(
         )
     })?;
 
-    let mut hidcodec = U2FHID::new(cmd);
+    let mut hidcodec = U2fHid::new(cmd);
     let mut buf = [0u8; 7 + 7609]; // Maximally supported size by u2f
     let len = hidcodec.encode(&res[..], &mut buf[..])?;
 

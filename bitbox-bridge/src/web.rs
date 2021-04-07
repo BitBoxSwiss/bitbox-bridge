@@ -21,10 +21,10 @@ use std::net::SocketAddr;
 use warp::{self, Filter, Rejection};
 
 use crate::error::WebError;
-use crate::usb::USBDevices;
+use crate::usb::UsbDevices;
 
 async fn list_devices(
-    usb_devices_tx: (USBDevices, mpsc::Sender<()>),
+    usb_devices_tx: (UsbDevices, mpsc::Sender<()>),
 ) -> Result<impl warp::Reply, Rejection> {
     let (usb_devices, mut tx) = usb_devices_tx;
     notify(&mut tx);
@@ -85,7 +85,7 @@ pub fn notify(tx: &mut mpsc::Sender<()>) {
 async fn ws_upgrade(
     path: String,
     ws: warp::ws::Ws,
-    usb_devices_tx: (USBDevices, mpsc::Sender<()>),
+    usb_devices_tx: (UsbDevices, mpsc::Sender<()>),
 ) -> Result<impl warp::Reply, Rejection> {
     let path = match percent_decode_str(&path).decode_utf8() {
         Ok(path) => path.into_owned(),
@@ -152,7 +152,7 @@ async fn ws_upgrade(
 }
 
 pub fn create(
-    usb_devices: USBDevices,
+    usb_devices: UsbDevices,
     notify_tx: mpsc::Sender<()>,
     addr: SocketAddr,
 ) -> impl std::future::Future {
@@ -171,7 +171,7 @@ pub fn create(
                         return Ok(());
                     }
                 }
-                Err(warp::reject::custom(WebError::NonLocalIP))
+                Err(warp::reject::custom(WebError::NonLocalIp))
             }
         })
         .untuple_one();
@@ -205,12 +205,12 @@ pub fn create(
                         Some(host) => {
                             if !is_valid_origin(&host) {
                                 warn!("Not whitelisted origin tried to connect: {}", host);
-                                return Err(warp::reject::custom(WebError::NonLocalIP));
+                                return Err(warp::reject::custom(WebError::NonLocalIp));
                             }
                         }
                         None => {
                             warn!("Not whitelisted origin tried to connect");
-                            return Err(warp::reject::custom(WebError::NonLocalIP));
+                            return Err(warp::reject::custom(WebError::NonLocalIp));
                         }
                     }
                 }

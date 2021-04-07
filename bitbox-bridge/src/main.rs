@@ -31,7 +31,7 @@ mod error;
 mod usb;
 mod web;
 
-use usb::USBDevices;
+use usb::UsbDevices;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // On some platforms it is necessary to inform that you are a daemon and will run in the
@@ -67,7 +67,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut rt = Runtime::new()?;
 
     // Create the global state that can be shared between threads
-    let usb_devices = USBDevices::new()?;
+    let usb_devices = UsbDevices::new()?;
 
     // Create a channel with which it is possible to request a refresh of usb devices. A length of
     // 1 is enough since it doesn't make sense to request more refreses than the refresh task can

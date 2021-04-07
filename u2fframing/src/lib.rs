@@ -92,14 +92,14 @@ pub fn generate_cid() -> u32 {
 
 // U2FWS (U2F WebSocket framing protocol) writes u2fhid header and payload as single package (up to
 // 7+7609 bytes)
-pub struct U2FWS {
+pub struct U2fWs {
     cid: u32,
     cmd: u8,
 }
 
-impl U2FWS {
+impl U2fWs {
     pub fn new(cmd: u8) -> Self {
-        U2FWS {
+        U2fWs {
             cid: generate_cid(),
             cmd,
         }
@@ -107,17 +107,17 @@ impl U2FWS {
     // If you want to decode first you need to set the correct cid...
     // TODO: Is this good?
     pub fn with_cid(cid: u32, cmd: u8) -> Self {
-        U2FWS { cid, cmd }
+        U2fWs { cid, cmd }
     }
 }
 
-impl Default for U2FWS {
+impl Default for U2fWs {
     fn default() -> Self {
         Self::new(0)
     }
 }
 
-impl U2FFraming for U2FWS {
+impl U2FFraming for U2fWs {
     fn encode(&mut self, message: &[u8], mut buf: &mut [u8]) -> io::Result<usize> {
         let len = encode_header_init(self.cid, self.cmd, message.len() as u16, buf)?;
         buf = &mut buf[len..];
@@ -161,22 +161,22 @@ impl U2FFraming for U2FWS {
     }
 }
 
-// U2FHID writes packets / usb reports. 64 bytes at a time
-pub struct U2FHID {
+// U2fHid writes packets / usb reports. 64 bytes at a time
+pub struct U2fHid {
     cid: u32,
     cmd: u8,
 }
 
-impl U2FHID {
+impl U2fHid {
     pub fn new(cmd: u8) -> Self {
-        U2FHID {
+        U2fHid {
             cid: generate_cid(),
             cmd,
         }
     }
 
     pub fn with_cid(cid: u32, cmd: u8) -> Self {
-        U2FHID { cid, cmd }
+        U2fHid { cid, cmd }
     }
 
     fn get_encoded_len(len: u16) -> usize {
@@ -189,13 +189,13 @@ impl U2FHID {
     }
 }
 
-impl Default for U2FHID {
+impl Default for U2fHid {
     fn default() -> Self {
         Self::new(0)
     }
 }
 
-impl U2FFraming for U2FHID {
+impl U2FFraming for U2fHid {
     fn encode(&mut self, mut message: &[u8], mut buf: &mut [u8]) -> io::Result<usize> {
         let enc_len = Self::get_encoded_len(message.len() as u16);
         debug!("Will encode {} in {}", message.len(), enc_len);
@@ -287,7 +287,7 @@ mod tests {
     use crate::*;
     #[test]
     fn test_u2fhid_encode_single() {
-        let mut codec = U2FHID::with_cid(0xEEEEEEEE, 0x55);
+        let mut codec = U2fHid::with_cid(0xEEEEEEEE, 0x55);
         let mut data = [0u8; 8000];
         let len = codec.encode(b"\x01\x02\x03\x04", &mut data[..]).unwrap();
         assert_eq!(len, 64);
@@ -299,7 +299,7 @@ mod tests {
     #[test]
     fn test_u2fhid_encode_multi() {
         let payload: Vec<u8> = (0..65u8).collect();
-        let mut codec = U2FHID::with_cid(0xEEEEEEEE, 0x55);
+        let mut codec = U2fHid::with_cid(0xEEEEEEEE, 0x55);
         let mut data = [0u8; 8000];
         let len = codec.encode(&payload[..], &mut data[..]).unwrap();
         assert_eq!(len, 128);
@@ -313,7 +313,7 @@ mod tests {
 
     #[test]
     fn test_u2fhid_decode_single() {
-        let mut codec = U2FHID::with_cid(0xEEEEEEEE, 0x55);
+        let mut codec = U2fHid::with_cid(0xEEEEEEEE, 0x55);
         let mut raw = [0u8; 64];
         &raw[..11].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x04\x01\x02\x03\x04");
         let data = codec.decode(&raw[..]).unwrap().unwrap();
@@ -323,7 +323,7 @@ mod tests {
     #[test]
     fn test_u2fhid_decode_multi() {
         let payload: Vec<u8> = (0..65u8).collect();
-        let mut codec = U2FHID::with_cid(0xEEEEEEEE, 0x55);
+        let mut codec = U2fHid::with_cid(0xEEEEEEEE, 0x55);
         let mut raw = [0u8; 128];
         &raw[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
         &raw[7..64].copy_from_slice(&payload[..57]);
@@ -335,7 +335,7 @@ mod tests {
 
     #[test]
     fn test_u2fws_encode_single() {
-        let mut codec = U2FWS::with_cid(0xEEEEEEEE, 0x55);
+        let mut codec = U2fWs::with_cid(0xEEEEEEEE, 0x55);
         let mut data = [0u8; 8000];
         let len = codec.encode(b"\x01\x02\x03\x04", &mut data[..]).unwrap();
         assert_eq!(len, 11);
@@ -348,7 +348,7 @@ mod tests {
     #[test]
     fn test_u2fws_encode_multi() {
         let payload: Vec<u8> = (0..65u8).collect();
-        let mut codec = U2FWS::with_cid(0xEEEEEEEE, 0x55);
+        let mut codec = U2fWs::with_cid(0xEEEEEEEE, 0x55);
         let mut data = [0u8; 8000];
         let len = codec.encode(&payload[..], &mut data[..]).unwrap();
         assert_eq!(len, 72);
@@ -360,7 +360,7 @@ mod tests {
 
     #[test]
     fn test_u2fws_decode_single() {
-        let mut codec = U2FWS::with_cid(0xEEEEEEEE, 0x55);
+        let mut codec = U2fWs::with_cid(0xEEEEEEEE, 0x55);
         let data = codec
             .decode(b"\xEE\xEE\xEE\xEE\x55\x00\x04\x01\x02\x03\x04")
             .unwrap()
@@ -371,7 +371,7 @@ mod tests {
     #[test]
     fn test_u2fws_decode_multi() {
         let payload: Vec<u8> = (0..65u8).collect();
-        let mut codec = U2FWS::with_cid(0xEEEEEEEE, 0x55);
+        let mut codec = U2fWs::with_cid(0xEEEEEEEE, 0x55);
         let mut raw = [0u8; 128];
         &raw[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
         &raw[7..72].copy_from_slice(&payload[..]);

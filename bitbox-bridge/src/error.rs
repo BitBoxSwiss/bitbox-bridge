@@ -17,7 +17,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum WebError {
     #[error("not a local IP")]
-    NonLocalIP,
+    NonLocalIp,
     #[error("no such device")]
     NoSuchDevice,
     #[error("invalid virtual host")]
