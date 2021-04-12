@@ -5,7 +5,7 @@
     <background alignment="bottomleft" file="BBBridge_icon_blue_160x125.png" scaling="none" />
     <background-darkAqua alignment="bottomleft" file="BBBridge_icon_blue_160x125.png" scaling="none" />
     <domains enable_localSystem="true"/>
-    <options customize="never" require-scripts="true" rootVolumeOnly="true" />
+    <options customize="never" require-scripts="true" rootVolumeOnly="true" hostArchitectures="x86_64,arm64"/>
     <!-- Define documents displayed at various steps -->
     <welcome    file="welcome.html"    mime-type="text/html" />
     <conclusion file="conclusion.html" mime-type="text/html" />
