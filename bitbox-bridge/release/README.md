@@ -15,6 +15,7 @@ Packages (deb/rpm/tar.gz2) will be created without further work.
 * Run `package.cmd`
 
 ## OSX
+* Install "toml-echo", `cargo install --version 0.3.0 toml-echo`.
 * Copy the whole project to an OSX machine
 * Run `bitbox-bridge/release/darwin/package.sh`
 
