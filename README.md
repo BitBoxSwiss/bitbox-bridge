@@ -60,5 +60,3 @@ error in case the device is busy.
 
 The bridge should be available on `http://localhost:8178`. Try the `/` endpoint and see if the
 bridge is running. Try `/api/v1/devices` to see if your device is listed.
-
-The website is online at [http://dev.shiftcrypto.ch/bridge](http://dev.shiftcrypto.ch/bridge)
