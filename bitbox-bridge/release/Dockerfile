@@ -80,7 +80,7 @@ RUN rustup target add aarch64-apple-darwin
 
 ##############################
 # toml-echo is a tool for echoing toml variables (like the package.version)
-RUN CARGO_HOME=/opt/cargo cargo install toml-echo
+RUN CARGO_HOME=/opt/cargo cargo install --version 0.3.0 toml-echo
 
 
 ##############################

@@ -13,9 +13,6 @@ CARGO_HOME=/tmp/cargo \
 TARGET_CC=aarch64-apple-darwin20.2-clang \
 cargo build --target aarch64-apple-darwin --release
 
-NAME=BitBoxBridge
-VERSION=$(toml-echo bitbox-bridge/Cargo.toml package.version)
-
 (
 	cd bitbox-bridge/release/darwin
 	mkdir -p tmp/opt/shiftcrypto/bitbox-bridge/bin

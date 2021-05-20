@@ -1,7 +1,7 @@
 # Package
 
 1. install wix toolset and visual studio
-2. install toml-echo: `cargo install toml-echo`
+2. install toml-echo: `cargo install --version 0.3.0 toml-echo`
 3. launch X64 native tools command prompt for VS 20XX
 4. run package-unsigned.cmd
 
