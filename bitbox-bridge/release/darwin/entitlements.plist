@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- We listen on network ports -->
+    <key>com.apple.security.network.server</key>
+    <true/>
+    <!-- We respond on network ports -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <!-- We communicate with usb devices -->
+    <key>com.apple.security.device.usb</key>
+    <true/>
+</dict>
+</plist>
