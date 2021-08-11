@@ -205,7 +205,7 @@ pub fn create(
                 if let Some(origin) = origin {
                     match origin.host() {
                         Some(host) => {
-                            if !is_valid_origin(&host) {
+                            if !is_valid_origin(host) {
                                 warn!("Not whitelisted origin tried to connect: {}", host);
                                 return Err(warp::reject::custom(WebError::NonLocalIp));
                             }

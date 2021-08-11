@@ -68,7 +68,7 @@ pub struct Device {
 impl Clone for Device {
     fn clone(&self) -> Self {
         Device {
-            inner: self.inner.as_ref().map(|dev| Arc::clone(&dev)),
+            inner: self.inner.as_ref().map(|dev| Arc::clone(dev)),
         }
     }
 }

@@ -105,7 +105,7 @@ impl UsbDevices {
                 d.insert(
                     "path".into(),
                     percent_encoding::utf8_percent_encode(
-                        &device.0,
+                        device.0,
                         percent_encoding::NON_ALPHANUMERIC,
                     )
                     .to_string(),
@@ -171,19 +171,18 @@ impl UsbDevices {
                         continue;
                     }
                 };
-                let product = product_string.as_ref();
                 seen.push(path.to_string());
                 match devices_guard.entry(path.to_string()) {
                     Entry::Occupied(_) => (),
                     Entry::Vacant(v) => {
                         info!("Found BitBox02 at {}!", path);
-                        v.insert(DeviceEntry::new(&product));
+                        v.insert(DeviceEntry::new(product_string));
                     }
                 }
             }
         }
         // Remove all devices that wasn't seen
-        devices_guard.retain(|k, _| seen.contains(&k));
+        devices_guard.retain(|k, _| seen.contains(k));
         Ok(())
     }
 

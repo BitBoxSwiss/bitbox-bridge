@@ -86,7 +86,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    let addr = SocketAddr::new("127.0.0.1".parse()?, u16::from_str_radix(port, 10)?);
+    let addr = SocketAddr::new("127.0.0.1".parse()?, port.parse::<u16>()?);
 
     println!("listening on http://{}", addr);
     let server = web::create(usb_devices, notify_tx, addr);
