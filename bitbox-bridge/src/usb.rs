@@ -151,26 +151,27 @@ impl UsbDevices {
         self.hidapi.lock().await.refresh_devices()?;
         let mut seen = Vec::new();
         let mut devices_guard = self.devices.lock().await;
-        for device in self.hidapi.lock().await.devices() {
+        for device in self.hidapi.lock().await.device_list() {
             // TODO(nc): On windows interface_number is -1. How to distinguish hww?
-            if device.vendor_id == 0x03eb
-                && device.product_id == 0x2403
-                && (device.interface_number == 0 || device.interface_number == -1)
+            if device.vendor_id() == 0x03eb
+                && device.product_id() == 0x2403
+                && (device.interface_number() == 0 || device.interface_number() == -1)
             {
-                let path = match device.path.as_ref().to_str() {
+                let path = match device.path().as_ref().to_str() {
                     Ok(path) => path,
                     Err(e) => {
                         warn!("ignored: {}", e);
                         continue;
                     }
                 };
-                let product = match device.product_string.as_ref() {
-                    Some(product) => product,
+                let product_string = match device.product_string() {
+                    Some(s) => s,
                     None => {
                         warn!("ignored: no product");
                         continue;
                     }
                 };
+                let product = product_string.as_ref();
                 seen.push(path.to_string());
                 match devices_guard.entry(path.to_string()) {
                     Entry::Occupied(_) => (),
