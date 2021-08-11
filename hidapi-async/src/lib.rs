@@ -15,6 +15,8 @@
 #[macro_use]
 extern crate log;
 
+pub use hidapi::HidApi;
+
 use futures::prelude::*;
 use futures::task::SpawnError;
 use hidapi::{HidDevice, HidError};

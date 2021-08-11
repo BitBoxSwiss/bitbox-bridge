@@ -91,7 +91,6 @@ dependencies = [
  "env_logger",
  "futures",
  "futures-util",
- "hidapi",
  "hidapi-async",
  "hyper",
  "log 0.4.8",
@@ -576,7 +575,7 @@ dependencies = [
 
 [[package]]
 name = "hidapi-async"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "async-std",
  "futures",
