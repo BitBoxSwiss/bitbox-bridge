@@ -1,6 +1,6 @@
 [package]
 name = "bitbox-bridge"
-version = "1.3.0"
+version = "1.3.1"
 authors = ["Niklas Claesson <nicke.claesson@gmail.com>"]
 edition = "2018"
 license = "Apache-2.0"
@@ -10,7 +10,6 @@ byteorder = "1.3"
 env_logger = "0.7"
 futures = "0.3"
 futures-util = "0.3"
-hidapi = "1.0"
 hyper = "0.13"
 log = "0.4.8"
 percent-encoding = "2.1"

@@ -5,16 +5,21 @@ set -e
 
 PATH="/opt/osxcross/target/bin:$PATH" \
 CARGO_HOME=/tmp/cargo \
-TARGET_CC=x86_64-apple-darwin14-clang \
+TARGET_CC=x86_64-apple-darwin20.2-clang \
 cargo build --target x86_64-apple-darwin --release
 
-NAME=BitBoxBridge
-VERSION=$(toml-echo bitbox-bridge/Cargo.toml package.version)
+PATH="/opt/osxcross/target/bin:$PATH" \
+CARGO_HOME=/tmp/cargo \
+TARGET_CC=aarch64-apple-darwin20.2-clang \
+cargo build --target aarch64-apple-darwin --release
 
 (
 	cd bitbox-bridge/release/darwin
 	mkdir -p tmp/opt/shiftcrypto/bitbox-bridge/bin
-	cp ../../../target/x86_64-apple-darwin/release/bitbox-bridge tmp/opt/shiftcrypto/bitbox-bridge/bin
+	PATH="/opt/osxcross/target/bin:$PATH" lipo -create \
+		-output tmp/opt/shiftcrypto/bitbox-bridge/bin/bitbox-bridge \
+		../../../target/x86_64-apple-darwin/release/bitbox-bridge \
+		../../../target/aarch64-apple-darwin/release/bitbox-bridge
 	mkdir -p tmp/Library/LaunchDaemons
 	cp ch.shiftcrypto.bitboxbridge.plist tmp/Library/LaunchDaemons
 )

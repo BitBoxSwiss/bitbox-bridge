@@ -16,8 +16,7 @@ use futures::channel::mpsc;
 use futures::channel::oneshot;
 use futures::lock::Mutex;
 use futures::prelude::*;
-use hidapi::HidApi;
-use hidapi_async::Device;
+use hidapi_async::{Device, HidApi};
 use std::collections::{hash_map::Entry, HashMap};
 use std::sync::Arc;
 use std::time::Duration;
@@ -106,7 +105,7 @@ impl UsbDevices {
                 d.insert(
                     "path".into(),
                     percent_encoding::utf8_percent_encode(
-                        &device.0,
+                        device.0,
                         percent_encoding::NON_ALPHANUMERIC,
                     )
                     .to_string(),
@@ -152,21 +151,21 @@ impl UsbDevices {
         self.hidapi.lock().await.refresh_devices()?;
         let mut seen = Vec::new();
         let mut devices_guard = self.devices.lock().await;
-        for device in self.hidapi.lock().await.devices() {
+        for device in self.hidapi.lock().await.device_list() {
             // TODO(nc): On windows interface_number is -1. How to distinguish hww?
-            if device.vendor_id == 0x03eb
-                && device.product_id == 0x2403
-                && (device.interface_number == 0 || device.interface_number == -1)
+            if device.vendor_id() == 0x03eb
+                && device.product_id() == 0x2403
+                && (device.interface_number() == 0 || device.interface_number() == -1)
             {
-                let path = match device.path.as_ref().to_str() {
+                let path = match device.path().as_ref().to_str() {
                     Ok(path) => path,
                     Err(e) => {
                         warn!("ignored: {}", e);
                         continue;
                     }
                 };
-                let product = match device.product_string.as_ref() {
-                    Some(product) => product,
+                let product_string = match device.product_string() {
+                    Some(s) => s,
                     None => {
                         warn!("ignored: no product");
                         continue;
@@ -177,13 +176,13 @@ impl UsbDevices {
                     Entry::Occupied(_) => (),
                     Entry::Vacant(v) => {
                         info!("Found BitBox02 at {}!", path);
-                        v.insert(DeviceEntry::new(&product));
+                        v.insert(DeviceEntry::new(product_string));
                     }
                 }
             }
         }
         // Remove all devices that wasn't seen
-        devices_guard.retain(|k, _| seen.contains(&k));
+        devices_guard.retain(|k, _| seen.contains(k));
         Ok(())
     }
 

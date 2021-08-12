@@ -15,6 +15,8 @@
 #[macro_use]
 extern crate log;
 
+pub use hidapi::HidApi;
+
 use futures::prelude::*;
 use futures::task::SpawnError;
 use hidapi::{HidDevice, HidError};
@@ -66,7 +68,7 @@ pub struct Device {
 impl Clone for Device {
     fn clone(&self) -> Self {
         Device {
-            inner: self.inner.as_ref().map(|dev| Arc::clone(&dev)),
+            inner: self.inner.as_ref().map(|dev| Arc::clone(dev)),
         }
     }
 }
