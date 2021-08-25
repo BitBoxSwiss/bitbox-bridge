@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
   <!-- ProductCode should change with every release -->
-  <?define ProductCode = "{f75f2097-6bad-4bd5-b6d7-352c048df6ae}"?>
+  <?define ProductCode = "{ddf4b648-48b7-4855-9945-6e9e81c4951b}"?>
   <!-- UpgradeCode should stay the same foverever (this is the real ID of the app)-->
   <?define UpgradeCode = "{dfe7eecb-5dc0-4c30-ba78-a9eff36efa31}"?>
 

@@ -200,9 +200,15 @@ pub fn create(
     // Use untuple_one at the end to get rid of the "unit" return value
     let check_origin = warp::header::optional("origin")
         .and_then(|origin: Option<hyper::Uri>| {
-            debug!("{:?}", origin);
+            debug!("Origin: {:?}", origin);
             async move {
                 if let Some(origin) = origin {
+                    let scheme_str = origin.scheme_str();
+                    if scheme_str == Some("chrome-extension") || scheme_str == Some("moz-extension")
+                    {
+                        debug!("Allow Chrome/Firefox extension");
+                        return Ok(());
+                    }
                     match origin.host() {
                         Some(host) => {
                             if !is_valid_origin(host) {
