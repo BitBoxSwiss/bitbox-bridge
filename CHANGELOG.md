@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0
+
+- Whitelist adalite.io
+
 ## 1.4.0
 
 - Whitelist Chrome and Firefox extensions
