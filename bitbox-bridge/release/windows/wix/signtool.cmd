@@ -1,1 +1,1 @@
-signtool.exe sign /d "BitBoxBridge" %*
+shiftcrypto-codesign.cmd %*

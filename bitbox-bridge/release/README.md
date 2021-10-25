@@ -11,8 +11,12 @@ Run `make release`. If needed, run `make dockerinit` to create the docker image.
 Packages (deb/rpm/tar.gz2) will be created without further work.
 
 ## Windows:
+* Install the wix toolset and Visual Studio 2019
+* install toml-echo: `cargo install --version 0.3.0 toml-echo`
 * Copy the whole project to a windows machine
-* Run `package.cmd`
+* Modify the path to the signtool in windows/wix/signtool.cmd if needed, or put it into `%PATH%`.
+* In the Visual Studio developer command prompt, run `package.cmd` from the windows\wix working directory
+* Find the installer in `./windows/wix/bin/Debug/`.
 
 ## OSX
 * Install "toml-echo", `cargo install --version 0.3.0 toml-echo`.
