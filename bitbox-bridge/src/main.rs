@@ -64,7 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Unwrap shouldn't happen since it has a default value
     let port = matches.value_of("port").unwrap();
     // Create an async runtime for spawning futures on
-    let mut rt = Runtime::new()?;
+    let rt = Runtime::new()?;
 
     // Create the global state that can be shared between threads
     let usb_devices = UsbDevices::new()?;

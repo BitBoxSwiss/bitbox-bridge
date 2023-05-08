@@ -266,7 +266,7 @@ impl U2FFraming for U2fHid {
         let len = usize::min(57, len as usize);
         res.extend_from_slice(&buf[HEADER_INIT_LEN..HEADER_INIT_LEN + len]);
         buf = &buf[HEADER_INIT_LEN + len..];
-        left -= len as usize;
+        left -= len;
 
         while left > 0 {
             let len = usize::min(59, left);
@@ -292,7 +292,7 @@ mod tests {
         let len = codec.encode(b"\x01\x02\x03\x04", &mut data[..]).unwrap();
         assert_eq!(len, 64);
         let mut expect = [0u8; 64];
-        &expect[..11].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x04\x01\x02\x03\x04");
+        expect[..11].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x04\x01\x02\x03\x04");
         assert_eq!(&data[..len], &expect[..]);
     }
 
@@ -304,10 +304,10 @@ mod tests {
         let len = codec.encode(&payload[..], &mut data[..]).unwrap();
         assert_eq!(len, 128);
         let mut expect = [0u8; 128];
-        &expect[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
-        &expect[7..64].copy_from_slice(&payload[..57]);
-        &expect[64..69].copy_from_slice(b"\xEE\xEE\xEE\xEE\x00");
-        &expect[69..77].copy_from_slice(&payload[57..]);
+        expect[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
+        expect[7..64].copy_from_slice(&payload[..57]);
+        expect[64..69].copy_from_slice(b"\xEE\xEE\xEE\xEE\x00");
+        expect[69..77].copy_from_slice(&payload[57..]);
         assert_eq!(&data[..len], &expect[..]);
     }
 
@@ -315,7 +315,7 @@ mod tests {
     fn test_u2fhid_decode_single() {
         let mut codec = U2fHid::with_cid(0xEEEEEEEE, 0x55);
         let mut raw = [0u8; 64];
-        &raw[..11].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x04\x01\x02\x03\x04");
+        raw[..11].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x04\x01\x02\x03\x04");
         let data = codec.decode(&raw[..]).unwrap().unwrap();
         assert_eq!(&data[..], b"\x01\x02\x03\x04");
     }
@@ -325,10 +325,10 @@ mod tests {
         let payload: Vec<u8> = (0..65u8).collect();
         let mut codec = U2fHid::with_cid(0xEEEEEEEE, 0x55);
         let mut raw = [0u8; 128];
-        &raw[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
-        &raw[7..64].copy_from_slice(&payload[..57]);
-        &raw[64..69].copy_from_slice(b"\xEE\xEE\xEE\xEE\x00");
-        &raw[69..77].copy_from_slice(&payload[57..]);
+        raw[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
+        raw[7..64].copy_from_slice(&payload[..57]);
+        raw[64..69].copy_from_slice(b"\xEE\xEE\xEE\xEE\x00");
+        raw[69..77].copy_from_slice(&payload[57..]);
         let data = codec.decode(&raw[..]).unwrap().unwrap();
         assert_eq!(&data[..], &payload[..]);
     }
@@ -353,8 +353,8 @@ mod tests {
         let len = codec.encode(&payload[..], &mut data[..]).unwrap();
         assert_eq!(len, 72);
         let mut expect = [0u8; 72];
-        &expect[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
-        &expect[7..72].copy_from_slice(&payload[..]);
+        expect[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
+        expect[7..72].copy_from_slice(&payload[..]);
         assert_eq!(&data[..len], &expect[..]);
     }
 
@@ -373,8 +373,8 @@ mod tests {
         let payload: Vec<u8> = (0..65u8).collect();
         let mut codec = U2fWs::with_cid(0xEEEEEEEE, 0x55);
         let mut raw = [0u8; 128];
-        &raw[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
-        &raw[7..72].copy_from_slice(&payload[..]);
+        raw[..7].copy_from_slice(b"\xEE\xEE\xEE\xEE\x55\x00\x41");
+        raw[7..72].copy_from_slice(&payload[..]);
         let data = codec.decode(&raw[..]).unwrap().unwrap();
         assert_eq!(&data[..], &payload[..]);
     }
