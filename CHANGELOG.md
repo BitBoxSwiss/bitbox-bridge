@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1
+- Fix bug where on macOS 13.3, the bridge would register one BitBox02 twice
+- Release built using the `shiftcrypto/bitbox-bridge:1` Docker image
+
 ## 1.5.0
 
 - Whitelist adalite.io
