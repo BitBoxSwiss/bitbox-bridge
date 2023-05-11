@@ -1,4 +1,7 @@
-FROM ubuntu:16.04
+# If you change this, also change the llvm repo below.
+FROM ubuntu:20.04
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y && apt-get upgrade -y
 
@@ -11,7 +14,8 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     wget \
     software-properties-common \
     apt-transport-https \
-    ca-certificates
+    ca-certificates \
+    gpg-agent
 
 
 ##############################
@@ -31,20 +35,20 @@ RUN gem install --no-document fpm
 
 
 ##############################
-# llvm 11 (needed because some rust crates compile C code)
+# llvm (needed because some rust crates compile C code). See https://apt.llvm.org/.
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-RUN add-apt-repository 'deb http://apt.llvm.org/xenial llvm-toolchain-xenial-11 main'
+RUN add-apt-repository 'deb http://apt.llvm.org/focal llvm-toolchain-focal-16 main'
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    llvm-11 \
-    clang-11
-RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 100
-RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-11 100
+    llvm-16 \
+    clang-16
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-16 100
+RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-16 100
 
 
 ##############################
 # bitbox-bridge linux dependencies
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    libusb-1.0-0-dev
+    libudev-dev
 
 
 ##############################
@@ -63,16 +67,16 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libssl-dev
 # SDK
 RUN git clone https://github.com/tpoechtrager/osxcross /opt/osxcross
-RUN cd /opt/osxcross && wget -nc https://github.com/joseluisq/macosx-sdks/releases/download/11.1/MacOSX11.1.sdk.tar.xz
-RUN cd /opt/osxcross && mv MacOSX11.1.sdk.tar.xz tarballs/
-RUN cd /opt/osxcross && UNATTENDED=yes OSX_VERSION_MIN=10.9 ./build.sh
+RUN cd /opt/osxcross && wget -nc https://github.com/joseluisq/macosx-sdks/releases/download/12.3/MacOSX12.3.sdk.tar.xz
+RUN cd /opt/osxcross && mv MacOSX12.3.sdk.tar.xz tarballs/
+RUN cd /opt/osxcross && UNATTENDED=yes OSX_VERSION_MIN=10.16 ./build.sh
 
 
 ##############################
 # Rust compiler
 ENV PATH /opt/cargo/bin:$PATH
 ENV RUSTUP_HOME=/opt/rustup
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | CARGO_HOME=/opt/cargo sh -s -- --profile minimal --default-toolchain 1.51.0 -y
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | CARGO_HOME=/opt/cargo sh -s -- --profile minimal --default-toolchain 1.69.0 -y
 RUN rustup target add x86_64-pc-windows-gnu
 RUN rustup target add x86_64-apple-darwin
 RUN rustup target add aarch64-apple-darwin

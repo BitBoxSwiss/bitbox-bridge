@@ -12,6 +12,7 @@ repository = "https://github.com/digitalbitbox/bitbox-bridge"
 [dependencies]
 futures = "0.3.1"
 log = "0.4.8"
-hidapi = "1.2.6"
+# Can be switched back to upstream once https://github.com/ruabmbua/hidapi-rs/issues/115 is fixed.
+hidapi = { git ="https://github.com/benma/hidapi-rs.git", branch="update-hidapi" }
 async-std = "1.2.0"
 thiserror = "1.0.9"

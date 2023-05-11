@@ -68,7 +68,7 @@ pub struct Device {
 impl Clone for Device {
     fn clone(&self) -> Self {
         Device {
-            inner: self.inner.as_ref().map(|dev| Arc::clone(dev)),
+            inner: self.inner.as_ref().map(Arc::clone),
         }
     }
 }
@@ -187,7 +187,7 @@ impl AsyncWrite for Device {
             // The hidapi API requires that you put the report ID in the first byte.
             // If you don't use report IDs you must put a 0 there.
             let mut buf_with_report_id = [0u8; 1 + 64];
-            (&mut buf_with_report_id[1..1 + max_len]).copy_from_slice(&buf[..max_len]);
+            buf_with_report_id[1..1 + max_len].copy_from_slice(&buf[..max_len]);
 
             //let this: &mut Self = &mut self;
             debug!("Will write {:?}", &buf_with_report_id[..]);

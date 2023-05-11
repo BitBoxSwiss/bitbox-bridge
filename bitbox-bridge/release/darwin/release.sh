@@ -5,12 +5,12 @@ set -e
 
 PATH="/opt/osxcross/target/bin:$PATH" \
 CARGO_HOME=/tmp/cargo \
-TARGET_CC=x86_64-apple-darwin20.2-clang \
+TARGET_CC=x86_64-apple-darwin21.4-clang \
 cargo build --target x86_64-apple-darwin --release
 
 PATH="/opt/osxcross/target/bin:$PATH" \
 CARGO_HOME=/tmp/cargo \
-TARGET_CC=aarch64-apple-darwin20.2-clang \
+TARGET_CC=aarch64-apple-darwin21.4-clang \
 cargo build --target aarch64-apple-darwin --release
 
 (

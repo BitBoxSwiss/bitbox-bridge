@@ -62,6 +62,7 @@ fn run_service(_args: Vec<OsString>) -> Result<(), windows_service::Error> {
         checkpoint: 0,
         // Only used for pending states, otherwise must be zero
         wait_hint: Duration::default(),
+        process_id: None,
     })?;
 
     // Poll shutdown event.
@@ -75,6 +76,7 @@ fn run_service(_args: Vec<OsString>) -> Result<(), windows_service::Error> {
         exit_code: ServiceExitCode::Win32(0),
         checkpoint: 0,
         wait_hint: Duration::default(),
+        process_id: None,
     })?;
 
     Ok(())

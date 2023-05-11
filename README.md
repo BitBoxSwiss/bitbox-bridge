@@ -12,7 +12,7 @@ There are installers for Windows/OSX and linux under [releases](https://github.c
 
 Go to [rustup](https://rustup.rs/) and get at least version 1.38 of the stable rust compiler.
 
-You need `libusb-1.0-0-dev` to compile the examples (`apt install libusb-1.0-0-dev`). Cargo will
+You need `libudev-dev` to compile the examples (`apt install libudev-dev`). Cargo will
 compile libhidapi and link to it statically.
 
 There are also docker build containers for every supported target in [bitbox-bridge/release](bitbox-bridge/release).

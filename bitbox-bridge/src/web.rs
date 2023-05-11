@@ -101,7 +101,7 @@ async fn ws_upgrade(
     let (usb_devices, mut tx) = usb_devices_tx;
     notify(&mut tx);
     let (mut dev_tx, mut dev_rx) = usb_devices
-        .acquire_device(&*path)
+        .acquire_device(&path)
         .await
         .map_err(|_e| warp::reject::custom(WebError::NoSuchDevice))?
         .ok_or_else(|| warp::reject::custom(WebError::NoSuchDevice))?;
