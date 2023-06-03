@@ -1,4 +1,4 @@
-FOR /F "tokens=* USEBACKQ" %%F IN (`toml-echo Cargo.toml package.version`) DO (
+FOR /F "tokens=* USEBACKQ" %%F IN (`toml-echo ..\..\..\Cargo.toml package.version`) DO (
 	SET VERSION=%%F
 )
 ECHO Packaging version %VERSION%

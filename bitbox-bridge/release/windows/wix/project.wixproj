@@ -50,10 +50,10 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="SignCabs">
-    <Exec Command="$(ProjectDir)signtool.cmd /a &quot;%(SignCabs.FullPath)&quot;" />
+    <Exec Command="$(ProjectDir)signtool.cmd &quot;%(SignCabs.FullPath)&quot;" />
   </Target>
 	<Target Name="SignMsi">
-    <Exec Command="$(ProjectDir)signtool.cmd /a &quot;%(SignMsi.FullPath)&quot;" />
+    <Exec Command="$(ProjectDir)signtool.cmd &quot;%(SignMsi.FullPath)&quot;" />
   </Target>
   <PropertyGroup>
     <PostBuildEvent />
