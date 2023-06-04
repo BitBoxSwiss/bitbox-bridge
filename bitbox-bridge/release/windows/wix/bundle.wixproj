@@ -49,10 +49,10 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="SignBundleEngine">
-    <Exec Command="$(ProjectDir)signtool.cmd &quot;@(SignBundleEngine)&quot;" />
+    <Exec Command="$(ProjectDir)bitboxbridge-codesign.cmd &quot;@(SignBundleEngine)&quot;" />
   </Target>
   <Target Name="SignBundle">
-    <Exec Command="$(ProjectDir)signtool.cmd &quot;@(SignBundle)&quot;" />
+    <Exec Command="$(ProjectDir)bitboxbridge-codesign.cmd &quot;@(SignBundle)&quot;" />
   </Target>
   <PropertyGroup>
     <PostBuildEvent />
