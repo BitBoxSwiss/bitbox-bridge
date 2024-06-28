@@ -8,5 +8,5 @@ description = "This package contains codecs for u2fhid standard."
 repository = "https://github.com/digitalbitbox/bitbox-bridge"
 
 [dependencies]
-byteorder = "1.3.2"
-log = "0.4.8"
+byteorder = "1.5"
+log = { workspace = true }
