@@ -8,6 +8,12 @@ members = [
 ]
 
 
+[workspace.dependencies]
+futures = "0.3"
+futures-util = "0.3"
+log = "0.4.22"
+thiserror = "1.0"
+
 [profile.release]
 lto = true
 #debug = 1
