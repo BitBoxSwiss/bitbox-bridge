@@ -7,6 +7,7 @@ members = [
     "hidapi-async",
 ]
 
+resolver = "2"
 
 [workspace.dependencies]
 futures = "0.3"
