@@ -2,7 +2,7 @@
 name = "u2fframing"
 version = "0.1.0"
 authors = ["Niklas Claesson <nicke.claesson@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "Apache-2.0"
 description = "This package contains codecs for u2fhid standard."
 repository = "https://github.com/digitalbitbox/bitbox-bridge"

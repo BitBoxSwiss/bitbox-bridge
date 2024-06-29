@@ -3,7 +3,7 @@ name = "bitbox-bridge"
 # If you bump this, also change the ProductCode in bitbox-bridge/release/windows/wix/Product.wxs.
 version = "1.5.1"
 authors = ["Niklas Claesson <nicke.claesson@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
