@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BitBoxBridge</title>
+</head>
+<body>
+    <h1>BitBoxBridge</h1>
+    <p>{{ message }}</p>
+    <button onclick="sendResponse(false)">Reject</button>
+    <button onclick="sendResponse(true)">Accept</button>
+    <script>
+        function sendResponse(userChoice) {
+            fetch(`/confirm/response/{{ counter }}/${userChoice}`, { method: 'POST' })
+                .then(() => window.close())
+                .catch(err => console.error('Error sending response:', err));
+        }
+    </script>
+</body>
+</html>
