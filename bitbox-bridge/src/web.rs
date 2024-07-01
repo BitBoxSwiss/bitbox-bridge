@@ -16,8 +16,9 @@ use futures::channel::mpsc;
 use futures::prelude::*;
 use futures_util::sink::SinkExt;
 use percent_encoding::percent_decode_str;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
+use std::sync::{Arc, Mutex};
 use warp::{self, Filter, Rejection};
 
 use crate::error::WebError;
@@ -83,6 +84,35 @@ pub fn notify(tx: &mut mpsc::Sender<()>) {
         Err(e) if e.is_disconnected() => debug!("Channel was closed"),
         Err(e) if e.is_full() => (),
         _ => (),
+    }
+}
+
+#[derive(Clone)]
+struct AllowedOrigins(Arc<Mutex<HashSet<String>>>);
+
+impl AllowedOrigins {
+    fn new() -> AllowedOrigins {
+        AllowedOrigins(Arc::new(Mutex::new(HashSet::new())))
+    }
+
+    async fn user_confirm_origin(&self, origin: &str) -> bool {
+        {
+            // Early return if the origin was previously allowed/accepted by the user.
+            if self.0.lock().unwrap().contains(origin) {
+                return true;
+            }
+        }
+        let answer = rfd::AsyncMessageDialog::new()
+            .set_title("BitBoxBridge")
+            .set_description("Do you want to proceed?")
+            .set_buttons(rfd::MessageButtons::YesNo)
+            .show()
+            .await;
+        let ok = answer == rfd::MessageDialogResult::Yes;
+        if ok {
+            self.0.lock().unwrap().insert(origin.into());
+        }
+        ok
     }
 }
 
@@ -156,6 +186,7 @@ async fn ws_upgrade(
 }
 
 pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: SocketAddr) {
+    let allowed_origins = AllowedOrigins::new();
     // create a warp filter out of "usb_devices" to pass it into our handlers later
     let usb_devices = warp::any().map(move || (usb_devices.clone(), notify_tx.clone()));
 
@@ -197,34 +228,40 @@ pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: 
     // Only accept some origin
     // Use untuple_one at the end to get rid of the "unit" return value
     let check_origin = warp::header::optional("origin")
-        .and_then(|origin: Option<hyper::Uri>| {
-            debug!("Origin: {:?}", origin);
-            async move {
-                if let Some(origin) = origin {
-                    let scheme_str = origin.scheme_str();
-                    if scheme_str == Some("chrome-extension") || scheme_str == Some("moz-extension")
-                    {
-                        debug!("Allow Chrome/Firefox extension");
-                        return Ok(());
-                    }
-                    match origin.host() {
-                        Some(host) => {
-                            if !is_valid_origin(host) {
-                                warn!("Not whitelisted origin tried to connect: {}", host);
+        .and(warp::any().map(move || allowed_origins.clone()))
+        .and_then(
+            |origin: Option<hyper::Uri>, allowed_origins: AllowedOrigins| {
+                debug!("Origin: {:?}", origin);
+                async move {
+                    if let Some(origin) = origin {
+                        let scheme_str = origin.scheme_str();
+                        if scheme_str == Some("chrome-extension")
+                            || scheme_str == Some("moz-extension")
+                        {
+                            debug!("Allow Chrome/Firefox extension");
+                            return Ok(());
+                        }
+                        match origin.host() {
+                            Some(host) => {
+                                if !is_valid_origin(host) {
+                                    if !allowed_origins.user_confirm_origin(host).await {
+                                        warn!("Not whitelisted origin tried to connect: {}", host);
+                                        return Err(warp::reject::custom(WebError::NonLocalIp));
+                                    }
+                                }
+                            }
+                            None => {
+                                warn!("Not whitelisted origin tried to connect");
                                 return Err(warp::reject::custom(WebError::NonLocalIp));
                             }
                         }
-                        None => {
-                            warn!("Not whitelisted origin tried to connect");
-                            return Err(warp::reject::custom(WebError::NonLocalIp));
-                        }
                     }
+                    // If there is no `origin` header, it must mean that the connection is from
+                    // a website hosted by ourselves. Which is fine.
+                    Ok(())
                 }
-                // If there is no `origin` header, it must mean that the connection is from
-                // a website hosted by ourselves. Which is fine.
-                Ok(())
-            }
-        })
+            },
+        )
         .untuple_one();
 
     let opt_origin = warp::header::optional("origin");
@@ -266,7 +303,7 @@ pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: 
     let websocket = warp::get()
         .and(v1_root)
         .and(websocket)
-        .and(check_origin)
+        .and(check_origin.clone())
         .and(warp::ws())
         .and(usb_devices.clone())
         .and_then(ws_upgrade);
@@ -275,7 +312,7 @@ pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: 
     let devices = warp::get()
         .and(v1_root)
         .and(devices)
-        .and(check_origin)
+        .and(check_origin.clone())
         .and(usb_devices)
         .and_then(list_devices)
         .and(opt_origin)
