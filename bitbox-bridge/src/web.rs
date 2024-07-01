@@ -102,12 +102,14 @@ impl AllowedOrigins {
                 return true;
             }
         }
-        let answer = rfd::AsyncMessageDialog::new()
+        // The AsyncMessageDialog does not work in rfd on macOS yet witout a main window.
+        // https://github.com/PolyMeilex/rfd/issues/104
+        // So we use the regular blocking MessageDialog.
+        let answer = rfd::MessageDialog::new()
             .set_title("BitBoxBridge")
             .set_description("Do you want to proceed?")
             .set_buttons(rfd::MessageButtons::YesNo)
-            .show()
-            .await;
+            .show();
         let ok = answer == rfd::MessageDialogResult::Yes;
         if ok {
             self.0.lock().unwrap().insert(origin.into());
