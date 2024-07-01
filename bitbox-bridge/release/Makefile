@@ -1,5 +1,5 @@
 # A poor mans command runner
-CONTAINER=shiftcrypto/bitbox-bridge
+CONTAINER=shiftcrypto/bitbox-bridge:2
 USER=$(shell id -u):$(shell id -g)
 MOUNT=$(shell pwd)/../..:/bitbox-bridge
 

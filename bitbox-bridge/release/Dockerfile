@@ -1,5 +1,5 @@
 # If you change this, also change the llvm repo below.
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -37,12 +37,12 @@ RUN gem install --no-document fpm
 ##############################
 # llvm (needed because some rust crates compile C code). See https://apt.llvm.org/.
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-RUN add-apt-repository 'deb http://apt.llvm.org/focal llvm-toolchain-focal-16 main'
+RUN add-apt-repository 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main'
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    llvm-16 \
-    clang-16
-RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-16 100
-RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-16 100
+    llvm-18 \
+    clang-18
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
+RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
 
 
 ##############################
@@ -76,7 +76,7 @@ RUN cd /opt/osxcross && UNATTENDED=yes OSX_VERSION_MIN=10.16 ./build.sh
 # Rust compiler
 ENV PATH /opt/cargo/bin:$PATH
 ENV RUSTUP_HOME=/opt/rustup
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | CARGO_HOME=/opt/cargo sh -s -- --profile minimal --default-toolchain 1.69.0 -y
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | CARGO_HOME=/opt/cargo sh -s -- --profile minimal --default-toolchain 1.79.0 -y
 RUN rustup target add x86_64-pc-windows-gnu
 RUN rustup target add x86_64-apple-darwin
 RUN rustup target add aarch64-apple-darwin
