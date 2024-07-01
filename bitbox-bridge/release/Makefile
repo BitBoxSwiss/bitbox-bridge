@@ -1,5 +1,5 @@
 # A poor mans command runner
-CONTAINER=shiftcrypto/bitbox-bridge
+CONTAINER=shiftcrypto/bitbox-bridge:2
 USER=$(shell id -u):$(shell id -g)
 MOUNT=$(shell pwd)/../..:/bitbox-bridge
 
@@ -14,10 +14,10 @@ release:
 	docker run --user ${USER} --interactive --tty -v ${MOUNT} -w /bitbox-bridge ${CONTAINER} bitbox-bridge/release/release.sh
 
 release-linux:
-	docker run --user ${USER} --interactive --tty -v ${MOUNT} -w /bitbox-bridge ${CONTAINER} bitbox-bridge/release/linux/release.sh
+	docker run --interactive --tty -v ${MOUNT} -w /bitbox-bridge ${CONTAINER} bitbox-bridge/release/linux/release.sh
 
 release-windows:
-	docker run --user ${USER} --interactive --tty -v ${MOUNT} -w /bitbox-bridge ${CONTAINER} bitbox-bridge/release/windows/release.sh
+	docker run  --interactive --tty -v ${MOUNT} -w /bitbox-bridge ${CONTAINER} bitbox-bridge/release/windows/release.sh
 
 release-darwin:
 	docker run --user ${USER} --interactive --tty -v ${MOUNT} -w /bitbox-bridge ${CONTAINER} bitbox-bridge/release/darwin/release.sh
