@@ -2,7 +2,7 @@
 name = "hidapi-async"
 version = "0.1.1"
 authors = ["Niklas Claesson <nicke.claesson@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "Apache-2.0"
 description = "Asynchronous bindings to hidapi"
 repository = "https://github.com/digitalbitbox/bitbox-bridge"
@@ -10,8 +10,7 @@ repository = "https://github.com/digitalbitbox/bitbox-bridge"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-futures = "0.3.1"
-log = "0.4.8"
-hidapi = "2.3.2"
-async-std = "1.2.0"
-thiserror = "1.0.9"
+futures = { workspace = true }
+log = { workspace = true }
+hidapi = "2.6.1"
+thiserror = { workspace = true }

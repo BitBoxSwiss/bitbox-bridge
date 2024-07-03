@@ -3,23 +3,22 @@ name = "bitbox-bridge"
 # If you bump this, also change the ProductCode in bitbox-bridge/release/windows/wix/Product.wxs.
 version = "1.5.1"
 authors = ["Niklas Claesson <nicke.claesson@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
-byteorder = "1.3"
-env_logger = "0.7"
-futures = "0.3"
-futures-util = "0.3"
-hyper = "0.14"
-log = "0.4.8"
-percent-encoding = "2.1"
-thiserror = "1.0"
-tokio = { version="1.28", features = ["time", "macros", "rt-multi-thread"] }
-windows-service = "0.6.0"
-clap = "2.33"
-warp = "0.3.5"
-tera = "1.1.0"
+env_logger = "0.11"
+futures =  { workspace = true }
+futures-util = { workspace = true }
+hyper = "1.3"
+log = { workspace = true }
+percent-encoding = "2.3"
+thiserror = { workspace = true }
+tokio = { version = "1.38", features = ["time", "macros", "rt-multi-thread"] }
+windows-service = "0.7.0"
+clap = { version = "4.5", features = ["cargo"] }
+warp = "0.3.7"
+tera = "1.20"
 
 [dependencies.u2fframing]
 version = "0.1"

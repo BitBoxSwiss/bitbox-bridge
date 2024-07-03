@@ -155,11 +155,7 @@ async fn ws_upgrade(
     }))
 }
 
-pub fn create(
-    usb_devices: UsbDevices,
-    notify_tx: mpsc::Sender<()>,
-    addr: SocketAddr,
-) -> impl std::future::Future {
+pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: SocketAddr) {
     // create a warp filter out of "usb_devices" to pass it into our handlers later
     let usb_devices = warp::any().map(move || (usb_devices.clone(), notify_tx.clone()));
 
@@ -322,5 +318,5 @@ pub fn create(
                 }
             }
         });
-    warp::serve(routes).run(addr)
+    warp::serve(routes).run(addr).await
 }
