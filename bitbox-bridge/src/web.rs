@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use futures::channel::mpsc;
+use futures::channel::{mpsc, oneshot};
 use futures::prelude::*;
 use futures_util::sink::SinkExt;
 use percent_encoding::percent_decode_str;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
-use warp::{self, Filter, Rejection};
+use std::sync::atomic::AtomicU32;
+use std::sync::{Arc, Mutex};
+use warp::{self, Filter, Rejection, Reply};
 
 use crate::error::WebError;
 use crate::usb::UsbDevices;
@@ -155,7 +157,144 @@ async fn ws_upgrade(
     }))
 }
 
+// Global state to store the current oneshot sender
+struct ConfirmState {
+    counter: AtomicU32,
+    sender: Mutex<HashMap<u32, (oneshot::Sender<bool>, String)>>,
+}
+
+impl ConfirmState {
+    fn new() -> Arc<Self> {
+        Arc::new(ConfirmState {
+            counter: AtomicU32::new(0),
+            sender: Mutex::new(HashMap::new()),
+        })
+    }
+}
+
+fn with_state<T: Clone + Send>(
+    state: T,
+) -> impl Filter<Extract = (T,), Error = std::convert::Infallible> + Clone {
+    warp::any().map(move || state.clone())
+}
+
+#[derive(Clone)]
+struct AllowedHosts(Arc<Mutex<HashSet<String>>>);
+
+impl AllowedHosts {
+    fn new() -> AllowedHosts {
+        AllowedHosts(Arc::new(Mutex::new(HashSet::new())))
+    }
+}
+
+async fn user_confirm(
+    confirm_state: Arc<ConfirmState>,
+    message: String,
+    base_url: &str,
+) -> Result<bool, ()> {
+    let (tx, rx) = oneshot::channel();
+    let counter = confirm_state
+        .counter
+        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    {
+        let mut sender = confirm_state.sender.lock().unwrap();
+        sender.insert(counter, (tx, message));
+    }
+
+    // Launch the web browser to show the dialog
+    let dialog_url = format!("{}/confirm/{}", base_url, counter);
+    if webbrowser::open(&dialog_url).is_err() {
+        return Err(());
+    }
+
+    // Wait for the user's response from the HTTP handler
+    rx.await.map_err(|_| ())
+}
+
+async fn user_confirm_origin(
+    confirm_state: Arc<ConfirmState>,
+    allowed_hosts: AllowedHosts,
+    host: &str,
+    base_url: &str,
+) -> Result<bool, ()> {
+    // Early return for whitelisted hosts.
+    if is_valid_origin(host) {
+        return Ok(true);
+    }
+    {
+        // Early return if the origin was previously allowed/accepted by the user.
+        if allowed_hosts.0.lock().unwrap().contains(host) {
+            return Ok(true);
+        }
+    }
+    let result = user_confirm(
+        confirm_state,
+        format!("Allow {} to connect to your BitBox?", host),
+        base_url,
+    )
+    .await?;
+    if result {
+        allowed_hosts.0.lock().unwrap().insert(host.into());
+    }
+    Ok(result)
+}
+
+fn setup_confirm_routes(
+    confirm_state: Arc<ConfirmState>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    let confirm_dialog = warp::path!("confirm" / u32)
+        .and(warp::get())
+        .and(with_state(confirm_state.clone()))
+        .map(|counter: u32, confirm_state: Arc<ConfirmState>| {
+            let sender_locked = confirm_state.sender.lock().unwrap();
+            if let Some((_, message)) = sender_locked.get(&counter) {
+                let html = include_str!("../resources/confirmation_dialog.html");
+                let ctx = {
+                    let mut ctx = tera::Context::new();
+                    ctx.insert("counter", &counter);
+                    ctx.insert("message", &message);
+                    ctx
+                };
+                let body = match tera::Tera::one_off(html, &ctx, true) {
+                    Ok(reply) => reply,
+                    Err(_) => "Could not render tera template".into(),
+                };
+                warp::reply::html(body).into_response()
+            } else {
+                // No user confirmation active.
+                warp::reply::with_status("", warp::http::StatusCode::BAD_REQUEST).into_response()
+            }
+        });
+
+    async fn handle_user_response(
+        counter: u32,
+        choice: bool,
+        confirm_state: Arc<ConfirmState>,
+    ) -> Result<impl warp::Reply, warp::Rejection> {
+        if let Some((sender, _)) = confirm_state.sender.lock().unwrap().remove(&counter) {
+            let _ = sender.send(choice);
+
+            Ok(warp::reply::with_status("", warp::http::StatusCode::OK))
+        } else {
+            Ok(warp::reply::with_status(
+                "",
+                warp::http::StatusCode::BAD_REQUEST,
+            ))
+        }
+    }
+
+    let handle_response = warp::path!("confirm" / "response" / u32 / bool)
+        .and(warp::post())
+        .and(with_state(confirm_state.clone()))
+        .and_then(handle_user_response);
+
+    handle_response.or(confirm_dialog)
+}
+
 pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: SocketAddr) {
+    let confirm_state = ConfirmState::new();
+    let allowed_hosts = AllowedHosts::new();
+
     // create a warp filter out of "usb_devices" to pass it into our handlers later
     let usb_devices = warp::any().map(move || (usb_devices.clone(), notify_tx.clone()));
 
@@ -197,34 +336,51 @@ pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: 
     // Only accept some origin
     // Use untuple_one at the end to get rid of the "unit" return value
     let check_origin = warp::header::optional("origin")
-        .and_then(|origin: Option<hyper::Uri>| {
-            debug!("Origin: {:?}", origin);
-            async move {
-                if let Some(origin) = origin {
-                    let scheme_str = origin.scheme_str();
-                    if scheme_str == Some("chrome-extension") || scheme_str == Some("moz-extension")
-                    {
-                        debug!("Allow Chrome/Firefox extension");
-                        return Ok(());
-                    }
-                    match origin.host() {
-                        Some(host) => {
-                            if !is_valid_origin(host) {
-                                warn!("Not whitelisted origin tried to connect: {}", host);
+        .and(with_state(confirm_state.clone()))
+        .and(with_state(allowed_hosts))
+        .and(with_state(addr))
+        .and_then(
+            |origin: Option<hyper::Uri>,
+             confirm_state: Arc<ConfirmState>,
+             allowed_hosts: AllowedHosts,
+             addr| {
+                debug!("Origin: {:?}", origin);
+                async move {
+                    if let Some(origin) = origin {
+                        let scheme_str = origin.scheme_str();
+                        if scheme_str == Some("chrome-extension")
+                            || scheme_str == Some("moz-extension")
+                        {
+                            debug!("Allow Chrome/Firefox extension");
+                            return Ok(());
+                        }
+                        match origin.host() {
+                            Some(host) => {
+                                if !user_confirm_origin(
+                                    confirm_state,
+                                    allowed_hosts,
+                                    host,
+                                    &format!("http://{}", addr),
+                                )
+                                .await
+                                .unwrap()
+                                {
+                                    warn!("Not whitelisted origin tried to connect: {}", host);
+                                    return Err(warp::reject::custom(WebError::NonLocalIp));
+                                }
+                            }
+                            None => {
+                                warn!("Not whitelisted origin tried to connect");
                                 return Err(warp::reject::custom(WebError::NonLocalIp));
                             }
                         }
-                        None => {
-                            warn!("Not whitelisted origin tried to connect");
-                            return Err(warp::reject::custom(WebError::NonLocalIp));
-                        }
                     }
+                    // If there is no `origin` header, it must mean that the connection is from
+                    // a website hosted by ourselves. Which is fine.
+                    Ok(())
                 }
-                // If there is no `origin` header, it must mean that the connection is from
-                // a website hosted by ourselves. Which is fine.
-                Ok(())
-            }
-        })
+            },
+        )
         .untuple_one();
 
     let opt_origin = warp::header::optional("origin");
@@ -266,7 +422,7 @@ pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: 
     let websocket = warp::get()
         .and(v1_root)
         .and(websocket)
-        .and(check_origin)
+        .and(check_origin.clone())
         .and(warp::ws())
         .and(usb_devices.clone())
         .and_then(ws_upgrade);
@@ -275,7 +431,7 @@ pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: 
     let devices = warp::get()
         .and(v1_root)
         .and(devices)
-        .and(check_origin)
+        .and(check_origin.clone())
         .and(usb_devices)
         .and_then(list_devices)
         .and(opt_origin)
@@ -285,15 +441,16 @@ pub async fn create(usb_devices: UsbDevices, notify_tx: mpsc::Sender<()>, addr: 
     let info = warp::get()
         .and(api)
         .and(info)
-        .and(check_origin)
+        .and(check_origin.clone())
         .and_then(show_info)
         .and(opt_origin)
         .map(add_origin);
 
+    let confirm_routes = setup_confirm_routes(confirm_state.clone());
     // combine routes
     let routes = only_local_ip
         .and(only_local_vhost)
-        .and(websocket.or(devices).or(root).or(info))
+        .and(websocket.or(devices).or(root).or(info).or(confirm_routes))
         .recover(|err: warp::Rejection| {
             async {
                 if let Some(err) = err.find::<WebError>() {

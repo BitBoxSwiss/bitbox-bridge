@@ -7,6 +7,7 @@ edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
+webbrowser = "1.0"
 env_logger = "0.11"
 futures =  { workspace = true }
 futures-util = { workspace = true }
