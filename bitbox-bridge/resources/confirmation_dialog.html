@@ -111,7 +111,7 @@
     </div>
     <script>
         function sendResponse(userChoice) {
-            fetch(`/confirm/response/{{ counter }}/${userChoice}`, { method: 'POST' })
+            fetch(`/confirm/response/{{ confirm_id }}/${userChoice}`, { method: 'POST' })
                 .then(() => window.close())
                 .catch(err => console.error('Error sending response:', err));
         }

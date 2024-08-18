@@ -18,7 +18,6 @@ use futures_util::sink::SinkExt;
 use percent_encoding::percent_decode_str;
 use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
-use std::sync::atomic::AtomicU32;
 use std::sync::{Arc, Mutex};
 use warp::{self, Filter, Rejection, Reply};
 
@@ -159,14 +158,12 @@ async fn ws_upgrade(
 
 // Global state to store the current oneshot sender
 struct ConfirmState {
-    counter: AtomicU32,
-    sender: Mutex<HashMap<u32, (oneshot::Sender<bool>, String)>>,
+    sender: Mutex<HashMap<String, (oneshot::Sender<bool>, String)>>,
 }
 
 impl ConfirmState {
     fn new() -> Arc<Self> {
         Arc::new(ConfirmState {
-            counter: AtomicU32::new(0),
             sender: Mutex::new(HashMap::new()),
         })
     }
@@ -193,16 +190,14 @@ async fn user_confirm(
     base_url: &str,
 ) -> Result<bool, ()> {
     let (tx, rx) = oneshot::channel();
-    let counter = confirm_state
-        .counter
-        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let confirm_id = uuid::Uuid::new_v4();
     {
         let mut sender = confirm_state.sender.lock().unwrap();
-        sender.insert(counter, (tx, message));
+        sender.insert(confirm_id.to_string(), (tx, message));
     }
 
     // Launch the web browser to show the dialog
-    let dialog_url = format!("{}/confirm/{}", base_url, counter);
+    let dialog_url = format!("{}/confirm/{}", base_url, confirm_id);
     if webbrowser::open(&dialog_url).is_err() {
         return Err(());
     }
@@ -242,16 +237,16 @@ async fn user_confirm_origin(
 fn setup_confirm_routes(
     confirm_state: Arc<ConfirmState>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    let confirm_dialog = warp::path!("confirm" / u32)
+    let confirm_dialog = warp::path!("confirm" / String)
         .and(warp::get())
         .and(with_state(confirm_state.clone()))
-        .map(|counter: u32, confirm_state: Arc<ConfirmState>| {
+        .map(|confirm_id: String, confirm_state: Arc<ConfirmState>| {
             let sender_locked = confirm_state.sender.lock().unwrap();
-            if let Some((_, message)) = sender_locked.get(&counter) {
+            if let Some((_, message)) = sender_locked.get(&confirm_id) {
                 let html = include_str!("../resources/confirmation_dialog.html");
                 let ctx = {
                     let mut ctx = tera::Context::new();
-                    ctx.insert("counter", &counter);
+                    ctx.insert("confirm_id", &confirm_id);
                     ctx.insert("message", &message);
                     ctx
                 };
@@ -267,11 +262,11 @@ fn setup_confirm_routes(
         });
 
     async fn handle_user_response(
-        counter: u32,
+        confirm_id: String,
         choice: bool,
         confirm_state: Arc<ConfirmState>,
     ) -> Result<impl warp::Reply, warp::Rejection> {
-        if let Some((sender, _)) = confirm_state.sender.lock().unwrap().remove(&counter) {
+        if let Some((sender, _)) = confirm_state.sender.lock().unwrap().remove(&confirm_id) {
             let _ = sender.send(choice);
 
             Ok(warp::reply::with_status("", warp::http::StatusCode::OK))
@@ -283,7 +278,7 @@ fn setup_confirm_routes(
         }
     }
 
-    let handle_response = warp::path!("confirm" / "response" / u32 / bool)
+    let handle_response = warp::path!("confirm" / "response" / String / bool)
         .and(warp::post())
         .and(with_state(confirm_state.clone()))
         .and_then(handle_user_response);
