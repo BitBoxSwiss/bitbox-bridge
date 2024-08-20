@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BitBoxBridge</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            align-items: center;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            overflow-y: auto;
+        }
+        body, button {
+            font-family: sans-serif;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 2px;
+            /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+            box-sizing: border-box;
+            display: block;
+            max-width: 640px;
+            min-height: 360px;
+            padding: 20px 30px;
+            text-align: center;
+            width: 100%;
+        }
+        .dbb-logo {
+            width: 72px;
+            height: 100%;
+            margin-top: 16px;
+            padding: 0.3em;
+        }
+        h1 {
+            font-size: 32px;
+            line-height: 1.25;
+            margin-top: 0;
+        }
+        p {
+            line-height: 1.4;
+            margin-bottom: 48px;
+        }
+        button {
+            background-color: #fff;
+            border: 2px solid #6b9ec5;
+            border-radius: 2px;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 16px;
+            height: 48px;
+            letter-spacing: 0.2px;
+            line-height: 46px;
+            margin: 0 0 16px 0;
+            min-width: 165px;
+            padding: 0 8px;
+        }
+        button + button {
+            margin-left: 16px;
+        }
+        button:hover {
+            border-color: #5794c4;
+        }
+        button svg {
+            display: inline;
+            margin-right: 8px;
+            max-height: 26px;
+            max-width: 26px;
+            vertical-align: middle;
+        }
+        .agree {
+            border-color: #78bd77;
+        }
+        .decline {
+            border-color: #ec644b;
+        }
+    </style>
+</head>
+<body>
+
+    <span hidden>
+        <svg xmlns="http://www.w3.org/2000/svg">
+        <symbol id="checkmark" class="checkmark" viewBox="0 0 52 52" stroke-linecap="round" stroke-linejoin="round" stroke-width="6">
+            <circle cx="26" cy="26" r="26" fill="#78bd77"/>
+            <path d="M14.1 27.2l7.1 7.2 16.7-16.8" fill="none" stroke="#fff"/>
+        </symbol>
+        <symbol id="crossmark" class="crossmark" viewBox="0 0 52 52" stroke-linecap="round" stroke-linejoin="round" stroke-width="6">
+            <circle cx="26" cy="26" r="26" fill="#ec644b"/>
+            <path d="M16 16 36 36 M36 16 16 36" fill="none" stroke="#fff"/>
+        </symbol>
+        </svg>
+    </span>
+
+    <div class="container">
+        <svg class="dbb-logo" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" class="dbb-logo" viewBox="0 0 512 512"><path d="M105.8 347.4v-82.9l67-28.8V106.6l66.6-29.1v212zm300.4.7v-82.8l-67-28.9V107.3l-66.6-28.9v211.8zm-150-29.6L123 376.7l133.1 57.8 133.6-58.1z" style="fill:#191919"/></svg>
+        <h1>BitBoxBridge</h1>
+        <p>{{ message }}</p>
+        <button class="decline" onclick="sendResponse(false)">
+            <svg><use xlink:href="#crossmark"></use></svg>
+            Reject
+        </button>
+        <button class="agree" onclick="sendResponse(true)">
+            <svg><use xlink:href="#checkmark"></use></svg>
+            Accept
+        </button>
+    </div>
+    <script>
+        function sendResponse(userChoice) {
+            fetch(`/confirm/response/{{ confirm_id }}/${userChoice}`, { method: 'POST' })
+                .then(() => window.close())
+                .catch(err => console.error('Error sending response:', err));
+        }
+    </script>
+</body>
+</html>
