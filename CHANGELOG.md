@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0
+
+- Prompt to accept/deny a host which is not explicitly allowed
+
 ## 1.5.1
 - Fix bug where on macOS 13.3, the bridge would register one BitBox02 twice
 - Fix a bug on Windows 11 causing timeouts of BitBox02 workflows
