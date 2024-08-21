@@ -134,7 +134,7 @@ checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
 name = "bitbox-bridge"
-version = "1.5.1"
+version = "1.6.0"
 dependencies = [
  "clap",
  "env_logger",
