@@ -184,6 +184,77 @@ impl AllowedHosts {
     }
 }
 
+// On windows, we use a native system dialog to prompt the user.
+// The browser based prompt does not work as we can't launch a browser from the service (not allowed).
+//
+// We use WTSSendMessage as officially recommended (it recommends WTSSendMessageA, the ANSI-encoded
+// version, but WTSSendMessagW for UTF-16 also works):
+//
+// See https://learn.microsoft.com/en-us/windows/win32/services/interactive-services
+// > You can use the following techniques to interact with the user from a service on all supported versions of Windows:
+// > Display a dialog box in the user's session using the [WTSSendMessage](https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/nf-wtsapi32-wtssendmessagea) function.
+#[cfg(target_os = "windows")]
+async fn user_confirm(
+    _confirm_state: Arc<ConfirmState>,
+    message: String,
+    _base_url: &str,
+) -> Result<bool, ()> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::System::RemoteDesktop::{
+        WTSGetActiveConsoleSessionId, WTSSendMessageW, WTS_CURRENT_SERVER_HANDLE,
+    };
+    use windows_sys::Win32::UI::WindowsAndMessaging::{IDYES, MB_YESNO, MESSAGEBOX_RESULT};
+
+    fn utf8_to_utf16(s: &str) -> Vec<u16> {
+        std::ffi::OsStr::new(s)
+            .encode_wide()
+            .chain(std::iter::once(0))
+            .collect()
+    }
+
+    let title_c = utf8_to_utf16("BitBoxBridge");
+    let message_c = utf8_to_utf16(&message);
+
+    let mut response: MESSAGEBOX_RESULT = 0;
+    let timeout: u32 = 60; // 60 seconds
+
+    unsafe {
+        // Need the active user session ID so the dialog is shown to the user.
+        let current_session = WTSGetActiveConsoleSessionId();
+        if current_session == 0xFFFFFFFF {
+            // See https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-wtsgetactiveconsolesessionid#return-value
+            return Err(());
+        }
+        let result = WTSSendMessageW(
+            WTS_CURRENT_SERVER_HANDLE,
+            current_session,
+            title_c.as_ptr(),
+            // Each element is 2 bytes except, including the the null terminator
+            (title_c.len() * 2) as u32,
+            message_c.as_ptr(),
+            (message_c.len() * 2) as u32,
+            MB_YESNO,
+            timeout,
+            &mut response,
+            1,
+        );
+
+        if result == 0 {
+            return Err(());
+        }
+    }
+
+    // Check if the user clicked 'Yes'
+    Ok(response == IDYES)
+}
+
+// On Linux/maCOS, we launch a browser with a prompt.
+//
+// On macOS, native dialogs don't work if there is no main window (we don't have one, it's a service).
+//
+// On linux, native dialogs would work, but we use the browser based solution here too as native
+// dialogs might not work in all distros/configs.
+#[cfg(not(target_os = "windows"))]
 async fn user_confirm(
     confirm_state: Arc<ConfirmState>,
     message: String,
