@@ -1,7 +1,7 @@
 [package]
 name = "bitbox-bridge"
 # If you bump this, also change the ProductCode in bitbox-bridge/release/windows/wix/Product.wxs.
-version = "1.6.0"
+version = "1.6.1"
 authors = ["Niklas Claesson <nicke.claesson@gmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -21,6 +21,9 @@ clap = { version = "4.5", features = ["cargo"] }
 warp = "0.3.7"
 tera = "1.20"
 uuid = { version = "1.10.0", features = ["v4"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59.0", features = ["Win32", "Win32_System", "Win32_UI", "Win32_System_RemoteDesktop", "Win32_UI_WindowsAndMessaging"] }
 
 [dependencies.u2fframing]
 version = "0.1"

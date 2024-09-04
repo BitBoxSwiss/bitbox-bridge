@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.1
+- Fix accept/deny prompt on Windows
+
 ## 1.6.0
 
 - Prompt to accept/deny a host which is not explicitly allowed
